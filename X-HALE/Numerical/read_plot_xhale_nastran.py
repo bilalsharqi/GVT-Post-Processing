@@ -355,11 +355,11 @@ def importEigenvectors(file_path, n_fields, n_grids, grids,n_subcases,grids_orde
 #                    print("cnt2 = "+ str(cnt2))
     return phi
 
-file_path="sol400_spring_out_new_accel_offset.f06"
-file_coords="sol400_coor.txt"
+file_path=".f06"
+file_coords=".txt"
 n_fields=25
 n_subcases=1
-grids1=importGridIDs('input_XHALE.bdf')
+grids1=importGridIDs('.bdf')
 n_grids=grids1[1]
 grids=np.array(grids1[0])
 grid_coord_NASTRAN = importGridCoords(file_coords, n_grids, grids)
@@ -367,6 +367,8 @@ freq_NASTRAN = importFrequencies(file_path, n_fields,n_subcases)
 mode_shapes_NASTRAN = importEigenvectors(file_path, n_fields, n_grids, grids, n_subcases,[])
 static_deform= importGridDispl(file_path, n_grids, grids)
 testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_fields)]
+
+# sample loads, need to be defined in the Nastran subcases for static loading
 #Loads=[[0,	0.000],
 #       [0.001,	0.0098],
 #       [0.01,	0.0981],
@@ -431,7 +433,7 @@ testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_
 
 
 #================================================================================
-# Save data
+# Save data in a .mat file, if want to use matlab for analysis/plotting
 #================================================================================
 #print("...Exporting results in a .mat file")
 #dir=os.path.dirname(os.path.abspath("load_save_modes_mat.py"))
@@ -460,14 +462,14 @@ testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_
 # Termination message
 #================================================================================
 #
-#print("\nNASTRAN data import completed")
+print("\nNASTRAN data import completed")
 ##
 #
-#max_static_deform=np.zeros(48)
+#max_static_deform=np.zeros(48) # change this according to the model size
 #for i in range(0,n_subcases):
 #    max_static_deform[i]=max(abs((static_deform[i][2,:])))+max(static_deform[i][2,:])
 #    
-#msd_semi_span=max_static_deform/(3.67/2)*100
+#msd_semi_span=max_static_deform/(6/2)*100
 #    
 print("MODE SHAPE PLOTTING")
 print("OOP Bending mode shapes")
@@ -498,10 +500,8 @@ i=10
 ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0], \
            grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1], \
            grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2])
-
 # the second scatter plot contains rotational data, which is not
 # necessarily needed to visualize rotations
-
 #ax.scatter(grid_coord_NASTRAN[0,:]+mode_shapes_NASTRAN[0][i][3], \
 #           grid_coord_NASTRAN[1,:]+mode_shapes_NASTRAN[0][i][4], \
 #           grid_coord_NASTRAN[2,:]+mode_shapes_NASTRAN[0][i][5])
@@ -535,29 +535,27 @@ ax.set_zlabel('Vetical displacement [m]')
 #ax.invert_xaxis()
 plt.show()
 
-# test plot for only the 2-D z-axis displacement against the span
-#print("STATIC DISPLACEMENT")
-#print("Z-axis data only")
-#i=0 # Test mode number
-#plt.figure()
-#plt.plot(grid_coord_NASTRAN[1,:]+static_deform[i][0][:]+static_deform[i][0][:],static_deform[0][2][:],'k*',label='Z translation')
-#plt.title('Static Displacement in Z' )
-#plt.xlabel('Length [m]')
-#plt.ylabel('Normalized Displacement')
-#plt.legend()
-
 
 # Plot a basic scatter plot with translational eigenvectors 
 # plotted on top of the grid coordinates which have the initial deformation
-# coming from the static displaccement accounted for
+# coming from the static displacement accounted for
 print("MODE SHAPE PLOTTING")
 print("Deformed jig + Translational data only")
 fig = plt.figure(figsize=(16,9))
 ax = fig.add_subplot(111, projection='3d')
 i=10 # test mode shape number
+# deformed mode shapes (initial grid coordinates + static displacement + modal displacements)
 ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0] +  static_deform[0][0], \
            grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1] +  static_deform[0][1], \
            grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2] +  static_deform[0][2])
+# static displacement (initial grid coordinates + static displacement)
+ax.scatter(grid_coord_NASTRAN[0,:] + static_deform[0][0][:], \
+           grid_coord_NASTRAN[1,:] + static_deform[0][1][:], \
+           grid_coord_NASTRAN[2,:] + static_deform[0][2][:])
+# undeformed mode shapes (initial grid coordinates + modal displacements)
+ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0], \
+           grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1], \
+           grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2])
 ax.set_ylim3d(-3,3)
 ax.set_zlim3d(-1.5,1.5)
 ax.set_xlabel('Chord [m]')
@@ -568,7 +566,17 @@ plt.title('Deformed Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN
 plt.show()
 
 
-#    
+print("STATIC DISPLACEMENT")
+print("OOP Z only")
+i=6 # Test mode number
+plt.figure()
+plt.plot(grid_coord_NASTRAN[1,:]+static_deform[0][1][:], grid_coord_NASTRAN[2,:]+ static_deform[0][2][:],'k*',label='Z translation')
+plt.title('Static Displacement in Z' )
+plt.xlabel('Length [m]')
+plt.ylabel('Normalized Displacement')
+plt.axis('equal')
+plt.legend()
+   
 
 
 
