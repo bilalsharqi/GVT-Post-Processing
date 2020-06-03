@@ -433,27 +433,28 @@ testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_
 #================================================================================
 # Save data
 #================================================================================
-#print("...Exporting results in a .mat file")
-#dir=os.path.dirname(os.path.abspath("load_save_modes_mat.py"))
-#path = os.path.join(dir, "NASTRAN_mode_shapes_out.mat")
-#database = {}
-##
-### Write problem data
-#database["n_fields"] = n_fields
-#database["n_grids"] = n_grids
-#database["grid_coords"] = grid_coord_NASTRAN
-##
-### Write mode shapes
-##
-## Write frequencies 
-#database["freq_NASTRAN_out"] = freq_NASTRAN
-## Write loads
-#database["Loads"] = Loads
+print("...Exporting results in a .mat file")
+dir=os.path.dirname(os.path.abspath("load_save_modes_mat.py"))
+path = os.path.join(dir, "NASTRAN_mode_shapes_out.mat")
+database = {}
 #
-## Writing database
-#if os.path.isfile(path):
-#    os.remove(path)
-#sio.savemat(path,database,appendmat=False)
+## Write problem data
+#database["number_of_modes"] = n_fields
+database["grids"] = grids
+database["num_coordinates"] = grid_coord_NASTRAN
+database["num_mode_shapes"] = mode_shapes_NASTRAN + static_deform
+#
+## Write mode shapes
+#
+# Write frequencies 
+database["freq_NASTRAN_out"] = freq_NASTRAN
+# Write loads
+#database["Loads"] = Loads
+
+# Writing database
+if os.path.isfile(path):
+    os.remove(path)
+sio.savemat(path,database,appendmat=False)
 
 
 #================================================================================
