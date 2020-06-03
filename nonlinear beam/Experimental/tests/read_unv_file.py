@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 import pyuff
 import os
 import sys
+import scipy.io as sio
 import re
 import cmath
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 plt.close("all")
 
-file_name = 'Out_time_mdof_complex_conf1.unv'
-#file_name = 'OOP_inb_new_attach_0_30Hz_no euler.unv'
+#file_name = 'OOP_inb_new_attach_0_30Hz_complex_polymax.unv'
+file_name = 'OOP_inb_new_attach_0_30Hz_no euler.unv'
+#file_name = 'Bradens_example_modes_alt.unv'
 uff_file = pyuff.UFF(file_name)
 
 types_of_sets = uff_file.get_set_types()
@@ -162,7 +164,6 @@ mode_shapes_sorted = sort_mode_shapes(mode_shapes, \
 mode_shapes_rotated = np.zeros_like(mode_shapes_sorted)
 # check if rotation matrices are defined, if yes, rotate the readings
 if CS_accel != []:
-#    mode_shapes_rotated = mode_shapes_sorted
     for i in range(len(freq_gvt)):
         for j in range(len(node_number_eigenvector)):
             mode_shapes_rotated[i,:,j] = (mode_shapes_sorted[i,:,j]).dot(CS_accel[j])
@@ -185,19 +186,18 @@ for i in reversed(range(0, len(freq_gvt))):
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(coordinates[0][:],\
                coordinates[1][:],\
-               coordinates[2][:], c='g', marker='*')
+               coordinates[2][:], c='k', marker='o')
     ax.scatter(evec_gvt[i][0][:], evec_gvt[i][1][:], evec_gvt[i][2][:])
-    ax.set_ylim3d(-3.5,3.5)
-    ax.set_xlim3d(-.5,1.0)
-    ax.set_zlim3d(-1,2)
-    ax.set_xlabel('x [m]')
-    ax.set_ylabel('y [m]')
+    ax.set_ylim3d(-0.5,0.5)
+    ax.set_xlim3d(-2,2)
+    ax.set_zlim3d(-1,1)
+    ax.set_xlabel('Span [m]')
+    ax.set_ylabel('Chord [m]')
     ax.set_zlabel('Vertical displacement [m]')
     plt.title('Mode number ' + str(i+1) + ' at frequency ' + str(freq_gvt[i]) + '' )
     plt.show()
     
     line_matrix = [] # this matrix contains cartesian vectors for lines connecting the points
-    line_matrix_2 = []
     for line in range(0,len(node_connection)-1):
         node_1 = node_connection[line]
 #        print('node_1')
@@ -205,12 +205,7 @@ for i in reversed(range(0, len(freq_gvt))):
         node_2 = node_connection[line+1]
 #        print('node_2')
 #        print(node_2)
-        if int(node_1)>=len(node_number_eigenvector):
-            line_matrix_2 = []
-        elif node_1==0:
-            line_matrix_2 = []
-        else:
-            line_matrix_2.append(evec_gvt[i][:,int(node_1)])
+        
         # This puts the lines from a portion of deformations together then
         # when a zero is encountered at node_1, plots them
         if node_1 == 0:
@@ -225,7 +220,7 @@ for i in reversed(range(0, len(freq_gvt))):
             z_tmp = [x[2] for x in line_matrix]
 #            print('z_tmp')
 #            print(z_tmp)
-            ax.plot3D(np.asarray(x_tmp).flatten(), np.asarray(y_tmp).flatten(), np.asarray(z_tmp).flatten(), 'black')
+            ax.plot3D(np.asarray(x_tmp).flatten(), np.asarray(y_tmp).flatten(), np.asarray(z_tmp).flatten(), 'red')
             
             # This happens at the end of node_connection
             if (node_1 == 0) & (node_2 == 0):
@@ -233,20 +228,32 @@ for i in reversed(range(0, len(freq_gvt))):
                 x_tmp = [x[0] for x in line_matrix]
                 y_tmp = [x[1] for x in line_matrix]
                 z_tmp = [x[2] for x in line_matrix]
-                ax.plot3D(np.asarray(x_tmp).flatten(), np.asarray(y_tmp).flatten(), np.asarray(z_tmp).flatten(), 'black')
+                ax.plot3D(np.asarray(x_tmp).flatten(), np.asarray(y_tmp).flatten(), np.asarray(z_tmp).flatten(), 'red')
 #                break
             line_matrix = []
                                       
-        # when node_1 is not 0
-        # because accel 23 was removed from the node_number and any 
-        # other data source (only for this test), shift the index
-        # for reading and assigning displacement values
-#        elif int(node_1)>len(node_number_eigenvector):
-#            line_matrix.append([0,0,0])
-        elif int(node_1)>22:
-            line_matrix.append(evec_gvt[i][:,int(node_1)-2])
+        # when node_1 !=0
+        elif int(node_1)>len(node_number_eigenvector):
+            line_matrix.append([0,0,0])
         else: 
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
 
-#          
+# save results in a .mat file. The data to be stored includes coordinates,
+# mode shapes, frequencies and damping
+print("...Exporting results in a .mat file")
+dir=os.path.dirname(os.path.abspath("read_unv_file.py"))
+path = os.path.join(dir, "beam_exp_data.mat")
+database = {}
+
+# Write problem data
+database["exp_mode_shapes_normalized"] = mode_shapes_normalized.imag
+database["exp_freq"] = freq_gvt
+database["exp_damp"] = damp_gvt
+database["exp_coordinates"] = coordinates
+
+# Writing database
+if os.path.isfile(path):
+    os.remove(path)
+sio.savemat(path,database,appendmat=False) 
+    

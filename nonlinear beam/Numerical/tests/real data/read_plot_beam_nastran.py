@@ -11,8 +11,8 @@ import scipy.io as sio
 import shutil
 import sys
 import matplotlib.pyplot as plt
-#from MTK.MTK import EigenPair, ModeSet, PlotReal,TrackModes
-
+from MTK.MTK import EigenPair, ModeSet, TrackModes
+plt.close("all")
 
 def importGridIDs(file_path):
     
@@ -427,21 +427,22 @@ Loads=[[0,	0.000],
 # Save data
 #================================================================================
 #print("...Exporting results in a .mat file")
-#dir=os.path.dirname(os.path.abspath("load_save_modes_mat.py"))
-#path = os.path.join(dir, "NASTRAN_mode_shapes_out.mat")
+#dir=os.path.dirname(os.path.abspath("read_plot_beam_nastran.py"))
+#path = os.path.join(dir, "beam_num_data_out.mat")
 #database = {}
 ##
 ### Write problem data
-#database["n_fields"] = n_fields
-#database["n_grids"] = n_grids
-#database["grid_coords"] = grid_coord_NASTRAN
+##database["number_of_modes"] = n_fields
+#database["grids"] = grids
+#database["num_coordinates"] = grid_coord_NASTRAN
+#database["num_mode_shapes"] = mode_shapes_NASTRAN[47] + static_deform[47]
 ##
 ### Write mode shapes
 ##
 ## Write frequencies 
-#database["freq_NASTRAN_out"] = freq_NASTRAN
+#database["num_freq"] = freq_NASTRAN[47]
 ## Write loads
-#database["Loads"] = Loads
+##database["Loads"] = Loads
 #
 ## Writing database
 #if os.path.isfile(path):
@@ -459,56 +460,25 @@ Loads=[[0,	0.000],
 max_static_deform=np.zeros(48)
 for i in range(0,n_subcases):
     max_static_deform[i]=max(abs((static_deform[i][2,:])))+max(static_deform[i][2,:])
-#    
-##print("MODE SHAPE PLOTTING")
-##print("OOP Bending mode shapes")
-##for i in range(0,n_fields):
-##    plt.figure()
-##    plt.plot(grid_coord_NASTRAN[0,:],mode_shapes_NASTRAN[i][1][2][:],'k')
-##    plt.title('Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[1][i]) + '' )
-##    plt.xlabel('Beam Length [m]')
-##    plt.ylabel('Normalized Displacement')
-##    
-##print("IP and torsional components")    
-##for j in range(0,n_fields):
-##    plt.figure()
-##    plt.plot(grid_coord_NASTRAN[0,:],mode_shapes_NASTRAN[j][1][1][:],'r',label='In-Plane component')
-##    plt.plot(grid_coord_NASTRAN[0,:],mode_shapes_NASTRAN[j][1][3][:],'b',label='Torsional Component')
-##    plt.title('Mode number ' + str(j) + ' at frequency ' + str(freq_NASTRAN[1][j]) + '' )
-##    plt.legend()
-##    
-#print("Static Displacement with loads")   
-#fig=plt.figure(figsize=(30,10)) 
-#for i in range(0,n_subcases):
-#    plt.plot(grid_coord_NASTRAN[0,:],static_deform[i][2][:],label=' ' +str(Loads[i][0])+ 'g' '',linewidth=3)
-##    plt.title('Static deformation with loads in g outboard' ,fontsize=32)
-#    plt.xlabel('Beam Length [m]',fontsize=26)
-#    plt.ylabel('Displacement [m]',fontsize=26)
-#    plt.xticks(fontsize=25)
-#    plt.yticks(fontsize=25)
-#    plt.annotate('Increasing loads [g]', xy=(1.83, -0.45), xytext=(1.83, 0.1),size = 25,
-#             arrowprops=dict(facecolor='black', shrink=0.05),
-#             )
-##    plt.legend(loc='lower right',fontsize=12)
-#
-#    fig.savefig('loads_static_out.pdf', dpi=300)
-    
-#print("Static Displacement with loads")   
-#fig=plt.figure(figsize=(15,5)) 
-#for i in range(0,n_subcases):
-#    plt.plot(grid_coord_NASTRAN[0,:]+static_deform[i][0][:],(static_deform[i][2][:])/1.835*100,label=' ' +str(Loads[i][0])+ 'g' '',linewidth=3)
-##    plt.title('Static deformation with loads in g outboard' ,fontsize=32)
-#    plt.xlabel('Beam Length [m]',fontsize=26)
-#    plt.ylabel('Vertical deflection [% of max]',fontsize=26)
-#    plt.xticks(fontsize=25)
-#    plt.yticks(fontsize=25)
-#    plt.annotate('Increasing loads [g]', xy=(1.7, -25), xytext=(1.7, 2),size = 25,
-#             arrowprops=dict(facecolor='black', shrink=0.05),
-#             )
-##    plt.legend(loc='lower right',fontsize=12)
+
+# snippet to plot all static displacements vs. loads
+print("Static Displacement with loads")   
+fig=plt.figure(figsize=(15,5)) 
+for i in range(0,n_subcases):
+    plt.plot(grid_coord_NASTRAN[0,:]+static_deform[i][0][:],(static_deform[i][2][:])/1.835*100,label=' ' +str(Loads[i][0])+ 'g' '',linewidth=3)
+#    plt.title('Static deformation with loads in g outboard' ,fontsize=32)
+    plt.xlabel('Beam Length [m]',fontsize=26)
+    plt.ylabel('Vertical deflection [% of max]',fontsize=26)
+    plt.xticks(fontsize=25)
+    plt.yticks(fontsize=25)
+    plt.annotate('Increasing loads [g]', xy=(1.7, -25), xytext=(1.7, 2),size = 25,
+             arrowprops=dict(facecolor='black', shrink=0.05),
+             )
+    plt.legend(loc='lower right',fontsize=12)
 #
 #    fig.savefig('loads_static_out.svg',bbox_inches='tight')
-    
+
+# code snippet to plot undeformed and fully deformed cases    
 print("Static Displacement with loads")   
 fig=plt.figure(figsize=(15,5)) 
 
@@ -525,41 +495,11 @@ plt.annotate('Increasing load [g]', xy=(1.7, -25), xytext=(1.7, 2),size = 25,
 plt.legend(loc='lower right',fontsize=24)
 
 #fig.savefig('loads_static_out.svg',bbox_inches='tight')
-#    
-##print("DEFORMED MODE SHAPE PLOTTING: STATIC DEF ADDED TO THE MODE SHAPE")
-##print("OOP Bending mode shapes")
-##for i in range(0,n_fields):
-##    plt.figure()
-##    plt.plot(grid_coord_NASTRAN[0,:],mode_shapes_NASTRAN[i][0][2][:] + static_deform[0][2][:],'k')
-##    plt.title('Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[1][i]) + '' )
-##    plt.xlabel('Beam Length [m]')
-##    plt.ylabel('Normalized Displacement')
-#    
-#loads=np.asarray(Loads)
-#ff=np.asarray(freq_NASTRAN)
-#print("Modes evolution with loading")    
-#plt.figure(figsize=(30,20)) 
-#for i in range(3,25):
-#    plt.plot(loads[:,0],ff[:,i],'*-',label='Mode # ' +str(i+1)+'')
-#    plt.title('Modes evolution with loading in g for the outboard suspension',fontsize=32 )
-#    plt.xlabel('Load [g]',fontsize=26)
-#    plt.ylabel('Frequency [Hz]',fontsize=26)
-#    plt.legend(loc='best')
-##    
-#print("Modes evolution with max static deformation")   
-#plt.figure(figsize=(20,10)) 
-#for i in range(3,11):
-#    plt.plot(max_static_deform,ff[:,i],'*-',label='Mode # ' +str(i+1)+'')
-#    plt.title('Modes evolution with max static deformation for the outboard suspension' )
-#    plt.xlabel('Vertical Static Deformation [m]')
-#    plt.ylabel('Frequency [Hz]')
-#    plt.legend(loc='best')
-#    
 
 #================================================================================
 # Mode tracking create data
 #================================================================================
-#test = (0.,np.zeros([6*n_grids]))
+
 print("\nStart of mode tracking data formatting")
 data_mode_sets =[[[0.,np.zeros([6*n_grids])] for i in range(n_fields)] for j in range(n_subcases)]
 for i in range(n_subcases):
@@ -590,7 +530,27 @@ for i in range(n_subcases):
 #================================================================================
 # End of Save data
 #================================================================================      
-        
+       
+def PlotReal(var, data, line=True, sym=True):
+    """Plots the real mode progression over a variable.
+    """
+    N_sets = len(data)
+    N_modes = data[0].Size()
+    real = np.zeros([N_sets, N_modes])
+
+    for i in range(N_sets):
+        for j in range(N_modes):
+            real[i,j] = data[i][j]["value"].real
+
+    # plot the data
+    opt = ""
+    if sym:
+        opt += "o"
+    if line:
+        opt += "-"
+
+    plt.plot(var, real, opt)
+    
 print("\nRead and plot untracked data")
 mode_sets = []
 
@@ -599,7 +559,7 @@ for modeset_list in data_mode_sets:
     modeset = ModeSet()
     for mode in modeset_list:
         pair = EigenPair()
-        pair["evalue"], pair["evector"]  = mode
+        pair["value"], pair["vector"]  = mode
 
         modeset.AddPair(pair)
 
@@ -616,12 +576,12 @@ for i in range(mode_sets[0].Size()):
         pair  = mode_sets[0][i]
         seed.AddPair(pair)
         
-var1=np.array(Loads)[0:,0]
-# plot the mode sets
+var1=np.array(Loads)[0:,0] # store loads
+# plot the untracked mode sets
 fig1=plt.figure(figsize=(15,8))
 PlotReal(var1, mode_sets[0:], sym=True, line=True)
 plt.rcParams["lines.linewidth"] = 3
-#plt.title('Modes evolution with loading in g outboard(initial)',fontsize=32 )
+plt.title('Modes evolution with loading in g outboard(untracked)',fontsize=32 )
 plt.xlabel("Loads [g]",fontsize=26)
 plt.ylabel("Frequency [Hz]",fontsize=26)
 plt.ax = plt.gca()
@@ -630,7 +590,7 @@ plt.yticks(fontsize=25)
 plt.ax.spines["right"].set_visible(False)
 plt.ax.spines["top"].set_visible(False)
 
-fig1.savefig("untracked_test_out_tuned.svg",bbox_inches='tight')
+#fig1.savefig("untracked_test_out_tuned.svg",bbox_inches='tight')
 
 print("\ntrack modes")
 tracked_mode_sets=TrackModes(seed,mode_sets[0:])
@@ -639,13 +599,12 @@ print("\nPlot tracked data")
 fig2=plt.figure(figsize=(15,8))
 plt.rcParams["lines.linewidth"] = 4
 PlotReal(var2, tracked_mode_sets, sym=True, line=True)
-#plt.title('Modes evolution with loading: outboard',fontsize=32 )
+plt.title('Modes evolution with loading: outboard(tracked)',fontsize=32 )
 plt.xlabel("Loads [g]",fontsize=26)
 plt.xticks(fontsize=25)
 plt.yticks(fontsize=25)
 plt.ylabel("Frequency [Hz]",fontsize=26)
 plt.ax = plt.gca()
-#plt.annotate('Pitch: X', xy=(-0.04, 0.04), xytext=(-0.04, 0.04),size=25)
 plt.annotate('1 T', xy=(-0.05,46), xytext=(-0.05, 46),size=25)
 plt.annotate('2 IP', xy=(-0.05,53), xytext=(-0.05, 53),size=25)
 plt.annotate('2 T', xy=(-0.05,97), xytext=(-0.05, 97),size=25)
@@ -655,12 +614,12 @@ plt.annotate('Pitch:X', xy=(-0.05, 1), xytext=(-0.05, 1),size=25)
 plt.ax.spines["right"].set_visible(False)
 plt.ax.spines["top"].set_visible(False)
 
-fig2.savefig("tracked_test_out_tuned.svg",bbox_inches='tight')
+#fig2.savefig("tracked_test_out_tuned.svg",bbox_inches='tight')
 
 fig3=plt.figure(figsize=(15,8))
 plt.rcParams["lines.linewidth"] = 4
 PlotReal(max_static_deform*100/1.835, tracked_mode_sets, sym=True, line=True)
-#plt.title('Modes evolution with max static deformation: outboard',fontsize=32 )
+plt.title('Modes evolution with max static deformation: outboard(tracked)',fontsize=32 )
 plt.xlabel("Tip Deflection [% semi-span]",fontsize=26)
 plt.xticks(fontsize=25)
 plt.yticks(fontsize=25)
@@ -675,11 +634,12 @@ plt.annotate('Pitch:X', xy=(-0.04, 1), xytext=(-0.04, 1),size=25)
 plt.ax.spines["right"].set_visible(False)
 plt.ax.spines["top"].set_visible(False)
 
-fig3.savefig("tracked_test_out_tuned_static.svg",bbox_inches='tight')
+#fig3.savefig("tracked_test_out_tuned_static.svg",bbox_inches='tight')
         
-#
 def PlotReal2(var, data, line=True, sym=True):
-    """Plots the real mode progression over a variable. Modified to plot only certain modes
+    """Plots the real mode progression over a variable. 
+    Modified to plot only certain modes input by the user in the 
+    test_modes array
     """
     N_sets = len(data)
     N_modes = data[0].Size()
@@ -687,7 +647,7 @@ def PlotReal2(var, data, line=True, sym=True):
 
     for i in range(N_sets):
         for j in range(N_modes):
-            real[i,j] = data[i][j]["evalue"].real
+            real[i,j] = data[i][j]["value"].real
 
     # plot the data
     opt = ""
@@ -699,19 +659,19 @@ def PlotReal2(var, data, line=True, sym=True):
     real2=real[:,test_modes]
     plt.plot(var, real2, opt)
 
-    print("...Exporting results in a .mat file")
-    dir=os.path.dirname(os.path.abspath("load_save_modes_mat.py"))
+#    print("...Exporting results in a .mat file")
+    dir=os.path.dirname(os.path.abspath("read_plot_beam_nastran.py"))
     path = os.path.join(dir, "outb_tracked_modes.mat")
     database = {}
-    #
-    ## Write problem data
+    
+    # Write problem data
     database["Loads"] = var2
     database["tracked_modes_out"] = real2
     
-    # Writing database
-    if os.path.isfile(path):
-        os.remove(path)
-    sio.savemat(path,database,appendmat=False)
+    # Writing database, uncomment if want to store selected modes in a .mat file
+#    if os.path.isfile(path):
+#        os.remove(path)
+#    sio.savemat(path,database,appendmat=False)
 #    
 #print("\ntrack modes")
 tracked_mode_sets=TrackModes(seed,mode_sets[0:])
@@ -720,10 +680,8 @@ var2=np.array(Loads)[0:,0]
 print("\nPlot tracked data with modes of interest")
 fig4=plt.figure(figsize=(15,8))
 plt.rcParams["lines.linewidth"] = 4
-
 PlotReal2(var2, tracked_mode_sets, sym=True, line=True)
-
-#plt.title('Modes evolution with loading: outboard',fontsize=32 )
+plt.title('Selected modes evolution with loading: outboard(tracked)',fontsize=32 )
 plt.xlabel("Loads [g]",fontsize=26)
 plt.xticks(fontsize=25)
 plt.yticks(fontsize=25)
@@ -735,38 +693,26 @@ plt.annotate('1 T', xy=(-0.05,45),     xytext=(-0.05, 45),size=25)
 plt.annotate('2 IP', xy=(-0.05,53),    xytext=(-0.05, 53),size=25)
 plt.annotate('2 T', xy=(-0.05,97),     xytext=(-0.05, 97),size=25)
 
-#plt.annotate('A', xy=(0.1, 2), xytext=(0.1, 2), size=25)
-#plt.annotate('B', xy=(0.1,33), xytext=(0.1, 33),size=25)
-#plt.annotate('C', xy=(0.1,43), xytext=(0.1, 43),size=25)
-#plt.annotate('D', xy=(0.1,60), xytext=(0.1, 60),size=25)
-#plt.annotate('E', xy=(0.1,95), xytext=(0.1, 95),size=25)
-#
-#plt.annotate('F', xy=(1, 2), xytext=(1, 2), size=25)
-#plt.annotate('G', xy=(1,15), xytext=(1, 15),size=25)
-#plt.annotate('H', xy=(1,46), xytext=(1, 46),size=25)
-#plt.annotate('I', xy=(1,86), xytext=(1, 86),size=25)
-#plt.annotate('J', xy=(1,113),xytext=(1,113),size=25)
-
 plt.ax.spines["right"].set_visible(False)
 plt.ax.spines["top"].set_visible(False)
 
-fig4.savefig("tracked_test_out_tuned_selected.svg",bbox_inches='tight')
-#
-#fig5=plt.figure(figsize=(30,15))
-#plt.rcParams["lines.linewidth"] = 4
-#PlotReal2(max_static_deform, tracked_mode_sets, sym=True, line=True)
-#plt.title('Modes evolution with max static deformation: outboard',fontsize=32 )
-#plt.xlabel("Tip Deflection [% semi-span]",fontsize=26)
-#plt.xticks(fontsize=25)
-#plt.yticks(fontsize=25)
-#plt.ylabel("Frequency [Hz]",fontsize=26)
-#plt.ax = plt.gca()
-#plt.annotate('1 IP', xy=(-0.02, 18), xytext=(-0.02, 18),size=25)
-#plt.annotate('1 T', xy=(-0.02,48), xytext=(-0.02, 48),size=25)
-#plt.annotate('2 IP', xy=(-0.02,52), xytext=(-0.02, 52),size=25)
-#plt.annotate('2 T', xy=(-0.02,97), xytext=(-0.02, 97),size=25)
-#plt.annotate('Pitch:X', xy=(-0.02, 1), xytext=(-0.02, 1),size=18)
-#plt.ax.spines["right"].set_visible(False)
-#plt.ax.spines["top"].set_visible(False)
-#
+#fig4.savefig("tracked_test_out_tuned_selected.svg",bbox_inches='tight')
+
+fig5=plt.figure(figsize=(15,8))
+plt.rcParams["lines.linewidth"] = 4
+PlotReal2(max_static_deform, tracked_mode_sets, sym=True, line=True)
+plt.title('Selected modes evolution with max static deformation: outboard(tracked)',fontsize=32 )
+plt.xlabel("Tip Deflection [% semi-span]",fontsize=26)
+plt.xticks(fontsize=25)
+plt.yticks(fontsize=25)
+plt.ylabel("Frequency [Hz]",fontsize=26)
+plt.ax = plt.gca()
+plt.annotate('1 IP', xy=(-0.02, 18), xytext=(-0.02, 18),size=25)
+plt.annotate('1 T', xy=(-0.02,48), xytext=(-0.02, 48),size=25)
+plt.annotate('2 IP', xy=(-0.02,52), xytext=(-0.02, 52),size=25)
+plt.annotate('2 T', xy=(-0.02,97), xytext=(-0.02, 97),size=25)
+plt.annotate('Pitch:X', xy=(-0.02, 1), xytext=(-0.02, 1),size=18)
+plt.ax.spines["right"].set_visible(False)
+plt.ax.spines["top"].set_visible(False)
+
 #fig5.savefig("tracked_test_out_tuned_static_select.svg",bbox_inches='tight')

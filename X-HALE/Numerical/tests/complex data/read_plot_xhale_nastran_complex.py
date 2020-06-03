@@ -252,12 +252,12 @@ def importFrequencies(file_path, n_modes,n_subcases):
     # importing frequencies
 
     open_file = open(file_path,'r') 
-    while not 'R E A L   E I G E N V A L U E S' in open_file.readline():
+    while not 'C O M P L E X   E I G E N V A L U E   S U M M A R Y' in open_file.readline():
 
         pass
 
     for n in range(0,n_subcases):
-        while not 'RADIANS' in open_file.readline():
+        while not 'EIGENVALUE' in open_file.readline():
             pass
         f=np.zeros(n_modes)
         for i in range(0,1):
@@ -278,6 +278,59 @@ def importFrequencies(file_path, n_modes,n_subcases):
 
     return freq
 
+# original importFrequencies function by riceroni
+# modification to read multiple subcases and damping by BS
+def importDamping(file_path, n_modes,n_subcases):
+
+    # this function imports the modal damping from a 
+    # MSC Nastran complex eigenvalue f06 output
+
+    print("Importing frequencies...")
+
+    # allocation
+    
+    damp = list(range(n_subcases))
+
+    for i in range(0,n_subcases):
+
+        damp[i] = np.zeros([n_modes])
+
+    # checking that file exists
+
+    if not os.path.isfile(file_path):
+
+        print("\nError in importFrequencies: file not found!")
+        sys.exit()
+
+    # importing frequencies
+
+    open_file = open(file_path,'r') 
+    while not 'C O M P L E X   E I G E N V A L U E   S U M M A R Y' in open_file.readline():
+
+        pass
+
+    for n in range(0,n_subcases):
+        while not 'EIGENVALUE' in open_file.readline():
+            pass
+        f=np.zeros(n_modes)
+        for i in range(0,1):
+    
+            line = open_file.readline()
+    
+        for i in range(0,n_modes):
+    
+            line_split = open_file.readline().split()
+            f[i] = line_split[5]
+    
+#            for j in range(0,n_subcases):
+#                freq[j,index] = line_split[j+2]
+        damp[n] = f
+    
+
+    open_file.close()
+
+    return damp
+
 
 # original importEigenvectors function by riceroni
 # modification to read multiple subcases by BF and BS
@@ -296,8 +349,9 @@ def importEigenvectors(file_path, n_fields, n_grids, grids,n_subcases,grids_orde
 
     # allocation
 
-#    phi = list((range(n_fields),n_subcases))
-    phi = [[np.zeros([6,n_grids]) for i in range(n_fields)] for j in range(n_subcases)]
+    phi = [[np.zeros([2*6,n_grids]) for i in range(n_fields)] for j in range(n_subcases)]
+    phi_real = [[np.zeros([6,n_grids]) for i in range(n_fields)] for j in range(n_subcases)]
+    phi_complex = [[np.zeros([6,n_grids]) for i in range(n_fields)] for j in range(n_subcases)]
 
 
     if not os.path.isfile(file_path):
@@ -313,57 +367,60 @@ def importEigenvectors(file_path, n_fields, n_grids, grids,n_subcases,grids_orde
     for count, line in enumerate(fp):
 #        for cnt2 in range(0,n_subcases):
 #            for cnt1 in range(0,n_fields):
-                if 'R E A L   E I G E N V E C T O R   N O .'  in line:
+                if 'C O M P L E X   E I G E N V E C T O R   NO.'  in line:
 
                     # skip lines to get to start of data
-                    for i in range(2):
+                    for i in range(3):
                         
                         fp.readline()
                     
                     # initialize unsorted displacement field
-                    u = np.zeros([6,n_grids])
+                    u_real = np.zeros([6,n_grids])
+                    u_complex = np.zeros([6,n_grids])
+                    u = np.zeros([2*6,n_grids])
                     
                     # loop through all the grid points
                     for j in range(n_grids):
                         
                         # Split line into multiple parts
-                        line_split = fp.readline().split()
-#                        print(line_split)
+                        line_split1 = fp.readline().split()
+                        line_split2 = fp.readline().split()
                         # get grid number
-                        grid = line_split[0]
+                        grid = line_split1[1]
                         
                         # find grid number in grids
                         index = np.where(grids == int(grid))
-                       
+                        
                         # loop over all 6 degrees of freedom
                         for k in range(6):
         #                    
                             # get the displacement value
-                            u[k,index] = line_split[k+2]
-                            
+                            u_real[k,index] = line_split1[k+3]
+                            u_complex[k,index] = line_split2[k]
+                            u = np.vstack((u_real,u_complex))
                     # assign displacement field to output
+                    phi_real[cnt2][cnt1] = u_real
+                    phi_complex[cnt2][cnt1] = u_complex
                     phi[cnt2][cnt1] = u
-                    
                     # incrememnt index on output vector
                     cnt1+=1
                     if cnt1 == n_fields:
                         cnt1=0
                         cnt2+=1
-#                    if cnt2 == n_subcases:
-#                        cnt2=0
-#                    print("cnt1 = "+ str(cnt1))
-#                    print("cnt2 = "+ str(cnt2))
     return phi
 
-file_path="sol400_spring_out_new_accel_offset.f06"
+
+
+file_path="sol400_spring_out.f06"
 file_coords="sol400_coor.txt"
-n_fields=25
+n_fields=50
 n_subcases=1
 grids1=importGridIDs('input_XHALE.bdf')
 n_grids=grids1[1]
 grids=np.array(grids1[0])
 grid_coord_NASTRAN = importGridCoords(file_coords, n_grids, grids)
 freq_NASTRAN = importFrequencies(file_path, n_fields,n_subcases)
+damp_NASTRAN = importDamping(file_path, n_fields,n_subcases)
 mode_shapes_NASTRAN = importEigenvectors(file_path, n_fields, n_grids, grids, n_subcases,[])
 static_deform= importGridDispl(file_path, n_grids, grids)
 testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_fields)]
@@ -460,7 +517,7 @@ testlist = [[np.zeros([6,n_grids]) for i in range(n_subcases)] for j in range(n_
 # Termination message
 #================================================================================
 #
-#print("\nNASTRAN data import completed")
+print("\nNASTRAN data import completed")
 ##
 #
 #max_static_deform=np.zeros(48)
@@ -477,28 +534,29 @@ plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][2][:],'k*',label='Z t
 plt.title('Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[0][i]) + '' )
 plt.xlabel('Length [m]')
 plt.ylabel('Normalized Displacement')
+plt.axis('equal')
 plt.legend()
 
 print("IP and torsional components")    
 plt.figure()
-i=8 # Test mode number
-#plt.plot(grid_coord_NASTRAN[0,:],mode_shapes_NASTRAN[0][i][1][:],'r*',label='In-Plane component')
-plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][4][:],'b*',label='Rotation about y')
+i=6 # Test mode number
+plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][1][:],'r*',label='In-Plane component')
+#plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][4][:],'b*',label='Rotation about y')
 plt.title('Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[0][i]) + '' )
 plt.legend()
-
+plt.axis('equal')
 
 print("MODE SHAPE PLOTTING")
 print("Translational data only")
 fig = plt.figure(figsize=(16,9))
 ax = fig.add_subplot(111, projection='3d')
-i=10
+i=7
 # Plot a basic scatter plot with translational eigenvectors 
 # plotted on top of the grid coordinates
 ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0], \
            grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1], \
            grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2])
-
+#plt.axis('equal')
 # the second scatter plot contains rotational data, which is not
 # necessarily needed to visualize rotations
 
@@ -507,7 +565,7 @@ ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0], \
 #           grid_coord_NASTRAN[2,:]+mode_shapes_NASTRAN[0][i][5])
 
 ax.set_ylim3d(-3,3)
-ax.set_zlim3d(-1.5,1.5)
+ax.set_zlim3d(-3,3)
 ax.set_xlabel('Chord [m]')
 ax.set_ylabel('Span [m]')
 ax.set_zlabel('Vetical displacement [m]')
@@ -531,20 +589,10 @@ ax.set_ylim3d(-3,3)
 ax.set_zlim3d(-1.5,1.5)
 ax.set_xlabel('Chord [m]')
 ax.set_ylabel('Span [m]')
-ax.set_zlabel('Vetical displacement [m]')
+ax.set_zlabel('Vertical displacement [m]')
+#plt.axis('equal')
 #ax.invert_xaxis()
 plt.show()
-
-# test plot for only the 2-D z-axis displacement against the span
-#print("STATIC DISPLACEMENT")
-#print("Z-axis data only")
-#i=0 # Test mode number
-#plt.figure()
-#plt.plot(grid_coord_NASTRAN[1,:]+static_deform[i][0][:]+static_deform[i][0][:],static_deform[0][2][:],'k*',label='Z translation')
-#plt.title('Static Displacement in Z' )
-#plt.xlabel('Length [m]')
-#plt.ylabel('Normalized Displacement')
-#plt.legend()
 
 
 # Plot a basic scatter plot with translational eigenvectors 
@@ -557,18 +605,33 @@ ax = fig.add_subplot(111, projection='3d')
 i=10 # test mode shape number
 ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0] +  static_deform[0][0], \
            grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1] +  static_deform[0][1], \
-           grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2] +  static_deform[0][2])
+           grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2] +  static_deform[0][2], label = 'deformed mode shape')
+ax.scatter(grid_coord_NASTRAN[0,:] + static_deform[0][0][:], \
+           grid_coord_NASTRAN[1,:] + static_deform[0][1][:], \
+           grid_coord_NASTRAN[2,:] + static_deform[0][2][:], label = 'static deformation')
+ax.scatter(grid_coord_NASTRAN[0,:] + mode_shapes_NASTRAN[0][i][0], \
+           grid_coord_NASTRAN[1,:] + mode_shapes_NASTRAN[0][i][1], \
+           grid_coord_NASTRAN[2,:] + mode_shapes_NASTRAN[0][i][2], label = 'undeformed mode shape')
 ax.set_ylim3d(-3,3)
 ax.set_zlim3d(-1.5,1.5)
 ax.set_xlabel('Chord [m]')
 ax.set_ylabel('Span [m]')
-ax.set_zlabel('Vetical displacement [m]')
-#ax.invert_xaxis()
+ax.set_zlabel('Vertical displacement [m]')
 plt.title('Deformed Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[0][i]) + '' )
+plt.legend()
 plt.show()
 
 
-#    
+print("STATIC DISPLACEMENT")
+print("OOP Z only")
+i=6 # Test mode number
+plt.figure()
+plt.plot(grid_coord_NASTRAN[1,:]+static_deform[0][1][:], grid_coord_NASTRAN[2,:]+ static_deform[0][2][:],'k*',label='Z translation')
+plt.title('Static Displacement in Z' )
+plt.xlabel('Length [m]')
+plt.ylabel('Normalized Displacement')
+plt.axis('equal')
+plt.legend()
 
 
 
