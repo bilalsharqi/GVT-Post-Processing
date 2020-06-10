@@ -249,4 +249,13 @@ for i in reversed(range(0, len(freq_gvt))):
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
 
-#          
+a = 6 # Test mode number
+plt.figure()
+plt.plot(coordinates[1],mode_shapes_normalized[a][2][:],'k*',label='Z translation')
+plt.title('Mode number 6 at a frequency of 4.62')
+plt.xlabel('Length [m]')
+plt.ylabel('Normalized Displacement')
+plt.legend()
+
+
+#currently need to compare mode 7 and 8 in experimental

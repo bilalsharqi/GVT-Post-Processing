@@ -355,11 +355,11 @@ def importEigenvectors(file_path, n_fields, n_grids, grids,n_subcases,grids_orde
 #                    print("cnt2 = "+ str(cnt2))
     return phi
 
-file_path=".f06"
-file_coords=".txt"
+file_path="sol400_spring_out_new_accel_offset.f06"
+file_coords="sol400_coor.txt"
 n_fields=25
 n_subcases=1
-grids1=importGridIDs('.bdf')
+grids1=importGridIDs('input_XHALE.bdf')
 n_grids=grids1[1]
 grids=np.array(grids1[0])
 grid_coord_NASTRAN = importGridCoords(file_coords, n_grids, grids)
@@ -473,7 +473,7 @@ print("\nNASTRAN data import completed")
 #    
 print("MODE SHAPE PLOTTING")
 print("OOP Bending mode shapes")
-i=6 # Test mode number
+i=19 # Test mode number
 plt.figure()
 plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][2][:],'k*',label='Z translation')
 plt.title('Mode number ' + str(i) + ' at frequency ' + str(freq_NASTRAN[0][i]) + '' )
