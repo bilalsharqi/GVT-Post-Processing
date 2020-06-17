@@ -14,7 +14,7 @@ load('fullGVT_all.mat')
 % NOTE: input
 evec_FEM; % 6DOF, (allFEMgrid*6*mode of interest)
 FEMevec_GRIDorder = GRIDs(:,1); % GRID IDs ordered as FEM evec
-evec_GVT; % 3DOF (allGVTgrid*3*mode of interest)
+evec_GVT; % 3DOF (allGVTgrid*3*mode of interest)                            %Torrence note: Grids x 3 accels x Modes in question
 nodeIDs_evec; % GVT evec-node ordering
 type = 'notfull';
 
@@ -110,8 +110,8 @@ for i = 1:Nmode
 end
 
 %MAC w/ vs w/o
-figure;hold on;rotate3d on;view(3);
-bar3c(MAC);
+figure;hold on;rotate3d on;view(3);                                         
+bar3(MAC);                                                                  %Torrence Comment (is this the bar 3 command for a bar graph?)Originally 'bar3c(MAC)'
 % axis limit
 xlim([0 Nmode+1]);ylim([0 Nmode+1]);zlim([0 1]);
 % title
@@ -144,3 +144,19 @@ zlabel('MAC')
 % end
 %     
 
+
+
+%If I'm understanding this correctly the phi matrix is made with this order
+
+%                           (Frequencies) 
+%   (eig_comps) ------------------------
+%   UniAxial      |
+%   X-axis        |     
+%   Y-axis        |  
+%   Z-axis 
+%
+%
+%
+%
+
+%

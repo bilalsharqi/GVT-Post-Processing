@@ -184,8 +184,8 @@ for i in reversed(range(0, len(freq_gvt))):
     fig = plt.figure(figsize=(16,9))
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(coordinates[0][:],\
-               coordinates[1][:],\
-               coordinates[2][:], c='g', marker='*')
+                coordinates[1][:],\
+                coordinates[2][:], c='g', marker='*')
     ax.scatter(evec_gvt[i][0][:], evec_gvt[i][1][:], evec_gvt[i][2][:])
     ax.set_ylim3d(-3.5,3.5)
     ax.set_xlim3d(-.5,1.0)
@@ -248,14 +248,16 @@ for i in reversed(range(0, len(freq_gvt))):
         else: 
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
-
-a = 6 # Test mode number
-plt.figure()
-plt.plot(coordinates[1],mode_shapes_normalized[a][2][:],'k*',label='Z translation')
-plt.title('Mode number 6 at a frequency of 4.62')
-plt.xlabel('Length [m]')
-plt.ylabel('Normalized Displacement')
-plt.legend()
+for a in range(len(evec_gvt)):
+    # a = 6 # Test mode number
+    plt.figure()
+    plt.plot(evec_gvt[a][1][:], evec_gvt[a][2][:],'k*',label='Z translation')
+    # plt.plot(mode_shapes_sorted[a][1][:], mode_shapes_normalized[a][2][:],'k*',label='Z translation')
+    current_frequency = str(freq_gvt[a]) #which frequency is this really
+    plt.title('Mode number '+ str(a+1) +' at a frequency of '+ current_frequency)
+    plt.xlabel('Length [m]')
+    plt.ylabel('Z Location')
+    plt.legend()
 
 
 #currently need to compare mode 7 and 8 in experimental

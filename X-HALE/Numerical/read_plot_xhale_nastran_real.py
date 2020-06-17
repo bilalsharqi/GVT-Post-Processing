@@ -473,6 +473,7 @@ print("\nNASTRAN data import completed")
 #    
 print("MODE SHAPE PLOTTING")
 print("OOP Bending mode shapes")
+
 i=19 # Test mode number
 plt.figure()
 plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][i][2][:],'k*',label='Z translation')
@@ -580,3 +581,11 @@ plt.legend()
 # does not contain MTK capability of function calls
 
 
+for echo in range (len(mode_shapes_NASTRAN[0])):
+    #i=19 # Test mode number
+    plt.figure()
+    plt.plot(grid_coord_NASTRAN[1,:],mode_shapes_NASTRAN[0][echo][2][:],'k*',label='Z translation')
+    plt.title('Mode number ' + str(echo) + ' at frequency ' + str(freq_NASTRAN[0][echo]) + '' )
+    plt.xlabel('Length [m]')
+    plt.ylabel('Normalized Displacement')
+    plt.legend()
