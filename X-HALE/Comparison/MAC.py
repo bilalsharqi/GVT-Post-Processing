@@ -3,7 +3,10 @@ import os
 import scipy.io as sio
 import shutil
 import sys
+from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
+from matplotlib import style
+style.use('ggplot')
 
 plt.close("all")
 
@@ -19,9 +22,12 @@ num_data = sio.loadmat(num_file)
 # accelerometer locations
 
 #exp_coordinates_x_adjusted = exp_data['exp_coordinates'][0] + 1.83  #Leftover from previous GVT beam test
-grids_uni_le_te = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,31,61,92,122,153,183,214,244,275,305,336] #Dummy indexes for grids and 
-freq_allowed = [0, 1, 2, 3, 4, 5, 6, 7, 9, 14, 24]
+#grids_uni_le_te = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,31,61,92,122,153,183,214,244,275,305,336] #Dummy indexes for grids and 
+#freq_allowed = [0, 1, 2, 3, 4, 5, 6, 7, 9, 14, 24]
 
+
+grids_uni_le_te = [15420, 15020, 15220, 15416, 15016, 15216, 14004, 10420, 10002, 10220, 13004, 9003, 5419, 5402, 5220, 8004, 16411, 16011, 16211, 4005, 19003, 21411, 21011, 21211, 19002, 26412, 26012, 26212, 24001, 26418, 26018, 26218, 25004, 26420, 26020, 26220]
+freq_allowed = [5,6,7,10,11,12,17,18,19,20,21] #PLEASE NOTE THESE ARE INDICIES. STILL FIXING THE REDUCTION FREQUENCY FUNCTION
 print(grids_uni_le_te)
 print(freq_allowed)
 
@@ -70,6 +76,7 @@ print(freq_allowed)
 #import numerical and experimental data
 #mode_shapes_reduced = np.reshape(num_data['num_mode_shapes'][0][0], 25, 6, 348)  #need to reshape this matrix so isn't a single row vector
 mode_shapes_reduced = num_data['num_mode_shapes'][0][0]
+all_grids = num_data['grids'][0]
 exp_modes_norm = exp_data['exp_mode_shapes_normalized']
 
 print('The size of the working mode matrix is currently ' + str(np.shape(mode_shapes_reduced)))
@@ -107,16 +114,120 @@ print('The size of the working matrix is now ' + str(np.shape(mode_shapes_reduce
 # have not modified anything after this
   #  mode_test = np.delete(mode_shapes_reduced_total[mode][dof], np.asarray(int_2_remove))  
 
+# Pseudo code
+    #do not read in z values
+    #assign grid point I.D.s to each set of coordinates  
+    #organize y values in ascending order and collect the indicies
+    # use indicy values to organize the x values
+    #Sort via tolerances
+    #Implement contingency:
+        #Bilal idea: if there are three or more values reduce to smallest tolerance (really small)
 
+
+
+class compGrid: 
+    #creates class that is easy to sort based upon y coordinate with attached x coordinate and grid ID number
+    def __init__ (self, y_comp, x_comp, gridID):
+        self.y = y_comp
+        self.x = x_comp
+        self.g = gridID
+        
+
+def organizeGrids (y_in, x_in, g_in, exp_in_y, exp_in_x):
+    grids_global_num = list()
+    returned_grid_matrix = []
+
+    for correction in range(len(exp_in_y)): #this prevents divide by zero cases later
+        if exp_in_y[correction] == 0:
+            exp_in_y[correction] = 1e-5
+    for correction2 in range(len(x_in)): #this prevents divide by zero cases later
+        if x_in[correction2] == 0:
+            x_in[correction2] = 1e-5
+            
+
+
+    for sphynx in range(len(y_in)):
+        grids_global_num.append(compGrid(y_in[sphynx], x_in[sphynx], g_in[sphynx])) # creates list of objects with y,x,and grid ID 
+    grids_global_num = sorted(grids_global_num, key = lambda compGrid: compGrid.y)  #arranges list in asceneding order 
+    
+    grids_global_exp = list()
+    for pyramid in range(len(exp_in_y)): 
+        grids_global_exp.append(compGrid(exp_in_y[pyramid], exp_in_x[pyramid], (pyramid + 1))) # creates list of objects with y,x,and grid ID 
+    
+    grids_global_exp = sorted(grids_global_exp, key = lambda compGrid: compGrid.y)  #arranges list in asceneding order 
+
+    #counter = 0
+    #PSEUDOCODE is placed within real code
+    temp_list = list()
+    for exp_range in range(len(grids_global_exp)):   #outer for loop going through experimental element
+        temp_list.clear() #create temp list
+        for num_range in range(len(grids_global_num)): #create inner for loop going through numerical elements 
+            p_diff = abs((grids_global_num[num_range].y - grids_global_exp[exp_range].y)/grids_global_exp[exp_range].y)#percent difference rel exp
+            if p_diff <= 0.05:
+                temp_list.append(grids_global_num[num_range])
+                #if within 4% of experimental y value append to temp list
+            if p_diff > 0.05 and len(temp_list) > 0: #if the temp indice is not empty AND percent difference rel. exp is greater than a 4% difference exit this loop
+                break #stops appending to the list after it gets in range and error is too great (this just is here to save time, may be problematic later)
+        #secondary processing. Ordered by x and finds the closest matching x value 
+        #make contingency for grabbing the closest value if temp list is empty and doesn't match experiment
+        if len(temp_list) == 0:
+                #cycle through numbers and append the closest set of numbers, just repeat with bigger tolerance
+            for num_range_e in range(len(grids_global_num)): 
+                p_diff_e = abs((grids_global_num[num_range_e].y - grids_global_exp[exp_range].y)/grids_global_exp[exp_range].y)
+                if p_diff_e <= 0.11:
+                    temp_list.append(grids_global_num[num_range_e])
+                if p_diff_e > 0.11 and len(temp_list) > 0: #if the temp indice is not empty AND percent difference rel. exp is greater than a 4% difference exit this loop
+                    break #stops appending to the list after it gets in range and error is too great (this just is here to save time, may be problematic later)
+            
+        temp_list = sorted(temp_list, key = lambda compGrid: compGrid.x)
+        #using temp matrix sort through temp x values compare to find the smallest absolute value difference (just use code from frequency work below)
+        for t in range(len(temp_list)):
+            p_diff_x1 = abs((temp_list[t].x - grids_global_exp[exp_range].x)/temp_list[t].x)
+            if (t+1) < len(temp_list):
+                p_diff_x2 = abs((temp_list[t+1].x - grids_global_exp[exp_range].x)/temp_list[t+1].x)
+            else:
+                p_diff_x2 = 3
+            if(p_diff_x1 < p_diff_x2 and p_diff_x1 < 0.1): #smallest possible error and relative error less than 10%
+                returned_grid_matrix = np.append(returned_grid_matrix, float(temp_list[t].g))
+                break
+            #counter = counter + 1
+        #print(str(counter))
+    return returned_grid_matrix
+ #this will not be the final return; probably need to return 
+
+#section to orgranize the grid and return the grid points matched of experimental with experimental
+
+num_sim_static_coords = np.delete(num_data['num_mode_shapes'][0][1],[3, 4, 5], axis = 0)
+num_sim_static_coords = np.add(num_sim_static_coords, num_data['num_coordinates'])
+
+grids_matched = organizeGrids(num_sim_static_coords[1,:],num_sim_static_coords[0,:], all_grids, exp_data['exp_coordinates'][1], exp_data['exp_coordinates'][0])
+
+
+
+#diagnostic section. DELETE THIS LATER ### The zeros and the back tails closest to right and after middle left are the ones being excluded
+grids_matched_index = []
+grids_matched = np.around(grids_matched)
+grids_matched = grids_matched.astype(int)
+grids_matched.reshape(1,21)
+for delete_me in range(len(grids_uni_le_te)): 
+    if grids_uni_le_te[delete_me] in grids_matched:
+        grids_matched_index.append(delete_me)
+        
+
+missing_link = np.delete(grids_uni_le_te,grids_matched_index, 0)
+
+print('random')
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! work on this later
+#input needs to be num coordinates + second element in deformation matrix
 
 
 # focus --> remove grid location points first (reduce from 348 sheets) then reduce frequencies from 25 to 12ish i think /T
 #modes_shapes_reduced_total defined above is just put aside here so it does not manipulate code 
-def remove_Grid_Freq (mode_shapes_reduced_dummy, freq_we_want, grids_we_want):
+def remove_Grid_Freq (total_grids, mode_shapes_reduced_dummy, freq_we_want, grids_we_want):
     int_2_remove = [] #presumably cycling through the 348 gridpoint /T
     freq_2_remove = []
-    for gridpoint in range(len(mode_shapes_reduced_dummy)):  
-        if gridpoint not in grids_we_want:
+    for gridpoint in range(len(total_grids)):  
+        if total_grids[gridpoint] not in grids_we_want:
             int_2_remove.append(gridpoint)
     mode_shapes_reduced_dummy = np.delete(mode_shapes_reduced_dummy, int_2_remove,0)  
     for f in range(len(mode_shapes_reduced_dummy[0])): #cycles through 25 frequencies in numerical data/T
@@ -128,7 +239,7 @@ def remove_Grid_Freq (mode_shapes_reduced_dummy, freq_we_want, grids_we_want):
     mode_shapes_reduced_dummy = np.delete(mode_shapes_reduced_dummy, freq_2_remove,axis = 1)  
     return mode_shapes_reduced_dummy
 
-working_matrix = remove_Grid_Freq(mode_shapes_reduced_total,freq_allowed, grids_uni_le_te )
+working_matrix = remove_Grid_Freq(all_grids, mode_shapes_reduced_total,freq_allowed, grids_uni_le_te )
 print('The working matrix has now been reduced to a size of ' + str(np.shape(working_matrix)))
 
 
@@ -143,9 +254,9 @@ print('The working matrix has now been reduced to a size of ' + str(np.shape(wor
 
 #Function deletes the rotational modes and creates a 2D matrix of frequencies x all measurements in one mode (every three)
 def orderPhi (num_reduced_matrix):
-    altered_working_matrix = num_reduced_matrix[0][:][:]
+    altered_working_matrix = np.reshape(num_reduced_matrix[0,:,2],(11,1))
     for foxtrot in range(1,len(num_reduced_matrix)):
-        altered_working_matrix = np.append(altered_working_matrix, num_reduced_matrix[foxtrot], axis = 1)
+        altered_working_matrix = np.append(altered_working_matrix, np.reshape(num_reduced_matrix[foxtrot,:,2],(11,1)), axis = 1)
     return altered_working_matrix
         #this reshapes the matrix into 
             #               _______every 3 translational modes ________
@@ -169,11 +280,17 @@ def calculateMAC (phi_exp, phi_num):
             t2 = np.dot(np.transpose(phi_exp[:][i]),phi_exp[:][i])
             t3 = np.dot(np.transpose(phi_num[:][j]),phi_num[:][j])
             MAC_matrix[i][j] = ((t1**2)/(t2 * t3))**0.5 #check if this is even the right equation
+    #mac_plot = plt.figure()
+    #ax1 = mac_plot.add_subplot(111, projection = '3d')
     return MAC_matrix
 
 dummy_matrix = np.random.randint(10,size = (15,7))
 test_v1 = calculateMAC(dummy_matrix, dummy_matrix)
-test_v2 = calculateMAC(np.transpose(working_matrix),np.transpose(working_matrix))
+test_v2 = calculateMAC(np.transpose(exp_modes_norm),np.transpose(working_matrix))
+
+
+
+#compare only the z components (third component)
 
 #function to compare experimental frequencies with numerical frequencies
 
@@ -196,7 +313,7 @@ test_v2 = calculateMAC(np.transpose(working_matrix),np.transpose(working_matrix)
 
 
 #def sortFrequencies (numericalData, experimentalData):
-experimentalData = exp_data['exp_freq']
+#experimentalData = exp_data['exp_freq']
                             # numericalData = num_data['freq_NASTRAN_out']
                             # numericalData = np.delete(numericalData,[0,1,2],1)
                             # freqIndicies = []

@@ -251,12 +251,13 @@ for i in reversed(range(0, len(freq_gvt))):
 for a in range(len(evec_gvt)):
     # a = 6 # Test mode number
     plt.figure()
-    plt.plot(evec_gvt[a][1][:], evec_gvt[a][2][:],'k*',label='Z translation')
+    # plt.plot(evec_gvt[a][1][:], evec_gvt[a][2][:],'k*',label='Z translation')
+    plt.plot(coordinates[1],mode_shapes_normalized[a][2][:],'k*',label='Z translation') 
     # plt.plot(mode_shapes_sorted[a][1][:], mode_shapes_normalized[a][2][:],'k*',label='Z translation')
     current_frequency = str(freq_gvt[a]) #which frequency is this really
     plt.title('Mode number '+ str(a+1) +' at a frequency of '+ current_frequency)
     plt.xlabel('Length [m]')
-    plt.ylabel('Z Location')
+    plt.ylabel('Normalized Displacement')
     plt.legend()
 
 

@@ -4,14 +4,14 @@ load('xhale_exp_data.mat');
 figure(1);
 scatter3(exp_coordinates(1,:), exp_coordinates(2,:),exp_coordinates(3,:))
 hold on
-comp = num_coordinates(:,:) + num_mode_shapes{1,2}(1:3,:);
+comp = num_coordinates + num_mode_shapes{1,2}(1:3,:);
+epipen = num_mode_shapes{1,2}(1:3,:);
 scatter3(comp(1,:),comp(2,:),comp(3,:))
 hold off
 %legend('experimental data', 'numerical data'); 
 xlabel('width(X)');
 ylabel('length(y)');
 zlabel('height(Z)')
-
 
 x_num = comp(1,:);
 y_num = comp(2,:);

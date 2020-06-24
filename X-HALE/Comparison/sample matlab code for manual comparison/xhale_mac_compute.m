@@ -82,8 +82,9 @@ Phi_FEM = zeros(44,size(evec_FEM,3));
 Phi_FEM(1:17,:) = evec_FEM_1(1:17,3,:);  % uni-axial
 Phi_FEM(18:3:end,:) = evec_FEM_1(18:end,1,:); % tri-axial, x
 Phi_FEM(19:3:end,:) = evec_FEM_1(18:end,2,:); % tri-axial, y
-Phi_FEM(20:3:end,:) = evec_FEM_1(18:end,3,:); % tri-axial, z
+Phi_FEM(20:3:end,:) = evec_FEM_1(18:end,3,:); % tri-axial, z               %three have triaxial accelerometers. For uni only take z-component
 
+% in a for loop select every four column 
 Phi_GVT = zeros(44,size(evec_GVT,3));
 Phi_GVT(1:17,:) = evec_GVT_1(1:17,3,:);  % uni-axial
 Phi_GVT(18:3:end,:) = evec_GVT_1(18:end,1,:); % tri-axial, x
