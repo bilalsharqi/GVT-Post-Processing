@@ -250,20 +250,20 @@ for i in reversed(range(0, len(freq_gvt))):
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
 
-# save results in a .mat file. The data to be stored includes coordinates,
-# mode shapes, frequencies and damping
-print("...Exporting results in a .mat file")
-dir=os.path.dirname(os.path.abspath("read_unv_file.py"))
-path = os.path.join(dir, "xhale_exp_data.mat")
-database = {}
+# # save results in a .mat file. The data to be stored includes coordinates,
+# # mode shapes, frequencies and damping
+# print("...Exporting results in a .mat file")
+# dir=os.path.dirname(os.path.abspath("read_unv_file.py"))
+# path = os.path.join(dir, "xhale_exp_data.mat")
+# database = {}
 
-# Write problem data
-database["exp_mode_shapes_normalized"] = mode_shapes_normalized.imag
-database["exp_freq"] = freq_gvt
-database["exp_damp"] = damp_gvt
-database["exp_coordinates"] = coordinates
+# # Write problem data
+# database["exp_mode_shapes_normalized"] = mode_shapes_normalized.imag
+# database["exp_freq"] = freq_gvt
+# database["exp_damp"] = damp_gvt
+# database["exp_coordinates"] = coordinates
 
-# Writing database
-if os.path.isfile(path):
-    os.remove(path)
-sio.savemat(path,database,appendmat=False)          
+# # Writing database
+# if os.path.isfile(path):
+#     os.remove(path)
+# sio.savemat(path,database,appendmat=False)          

@@ -7,6 +7,7 @@ hold on
 comp = num_coordinates + num_mode_shapes{1,2}(1:3,:);
 epipen = num_mode_shapes{1,2}(1:3,:);
 scatter3(comp(1,:),comp(2,:),comp(3,:))
+
 hold off
 %legend('experimental data', 'numerical data'); 
 xlabel('width(X)');
