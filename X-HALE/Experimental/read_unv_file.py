@@ -248,17 +248,17 @@ for i in reversed(range(0, len(freq_gvt))):
         else: 
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
-for a in range(len(evec_gvt)):
-    # a = 6 # Test mode number
-    plt.figure()
-    # plt.plot(evec_gvt[a][1][:], evec_gvt[a][2][:],'k*',label='Z translation')
-    plt.plot(coordinates[1],mode_shapes_normalized[a][2][:],'k*',label='Z translation') 
-    # plt.plot(mode_shapes_sorted[a][1][:], mode_shapes_normalized[a][2][:],'k*',label='Z translation')
-    current_frequency = str(freq_gvt[a]) #which frequency is this really
-    plt.title('Mode number '+ str(a+1) +' at a frequency of '+ current_frequency)
-    plt.xlabel('Length [m]')
-    plt.ylabel('Normalized Displacement')
-    plt.legend()
+# for a in range(len(evec_gvt)):
+#     # a = 6 # Test mode number
+#     plt.figure()
+#     # plt.plot(evec_gvt[a][1][:], evec_gvt[a][2][:],'k*',label='Z translation')
+#     plt.plot(coordinates[1],mode_shapes_normalized[a][2][:],'k*',label='Z translation') 
+#     # plt.plot(mode_shapes_sorted[a][1][:], mode_shapes_normalized[a][2][:],'k*',label='Z translation')
+#     current_frequency = str(freq_gvt[a]) #which frequency is this really
+#     plt.title('Mode number '+ str(a+1) +' at a frequency of '+ current_frequency)
+#     plt.xlabel('Length [m]')
+#     plt.ylabel('Normalized Displacement')
+#     plt.legend()
 
 
 #currently need to compare mode 7 and 8 in experimental

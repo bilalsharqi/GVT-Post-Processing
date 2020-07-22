@@ -36,6 +36,12 @@ sort_expZ = exp_z(sort_expIndexY);
 
 sorted_coords_grids_exp = [sort_expX; sort_expY;sort_expZ;(36.0:-1.0:1.0)];
 
+
+figure(2)
+scatter3(exp_mode_shapes_normalized(1,1,:),exp_mode_shapes_normalized(1,2,:),exp_mode_shapes_normalized(1,3,:))
+xlabel('X-axis'); 
+ylabel('Y-axis'); 
+zlabel('Z-axis'); 
 %% Matching coordinates to their experimental counterparts
 % Numerical coordinates matched with there Experiment Counter Parts
 % Exp. Node      Numerical Node    Exp Coordinates        Numerical Coordinaes
@@ -89,5 +95,3 @@ sorted_coords_grids_exp = [sort_expX; sort_expY;sort_expZ;(36.0:-1.0:1.0)];
 %   35              [26220]     (0.1424, -2.985, 1.13)      (0.1425, -2.684, 0.5327)
 %
 %                                                                                           
-
-

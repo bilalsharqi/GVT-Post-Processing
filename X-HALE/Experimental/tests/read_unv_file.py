@@ -17,7 +17,9 @@ import cmath
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 plt.close("all")
 
-file_name = 'Out_time_mdof_complex_conf1.unv'
+file_name = 'gvt1all.unv'
+
+#file_name = 'Out_time_mdof_complex_conf1.unv'
 #file_name = 'OOP_inb_new_attach_0_30Hz_no euler.unv'
 uff_file = pyuff.UFF(file_name)
 
@@ -250,7 +252,7 @@ for i in reversed(range(0, len(freq_gvt))):
             line_matrix.append(evec_gvt[i][:,int(node_1)-1])
           
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 # # save results in a .mat file. The data to be stored includes coordinates,
 # # mode shapes, frequencies and damping
 # print("...Exporting results in a .mat file")
@@ -268,7 +270,7 @@ for i in reversed(range(0, len(freq_gvt))):
 # if os.path.isfile(path):
 #     os.remove(path)
 # sio.savemat(path,database,appendmat=False)          
-=======
+#=======
 # save results in a .mat file. The data to be stored includes coordinates,
 # mode shapes, frequencies and damping
 #print("...Exporting results in a .mat file")
@@ -286,4 +288,4 @@ for i in reversed(range(0, len(freq_gvt))):
 #if os.path.isfile(path):
 #    os.remove(path)
 #sio.savemat(path,database,appendmat=False)          
->>>>>>> Torrence_mod
+#>>>>>>> Torrence_mod
