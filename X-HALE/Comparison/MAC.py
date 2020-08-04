@@ -169,10 +169,10 @@ def plotGraphs (x1,y1,z1,x2,y2,z2):
     ax3 = fig3.add_subplot(111, projection='3d')
     
     ax3.scatter(x1, y1, z1, c='b', linestyle='-', marker='o')
-    ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
+    # ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
 
     ax3.scatter(x2, y2, z2, c='r',linestyle='-', marker='o')
-    ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
+    # ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
 
     ax3.set_xlabel('X Label')
     ax3.set_ylabel('Y Label')
@@ -495,7 +495,7 @@ for hector in range(len(num_mode_beam)):
         num_mode_beam[hector,hector2,2] = num_mode_beam[hector,hector2,2] - subtract_mat[2,hector]
 #!!!!!!!!!this would be a good place to normalize data, wait no experimental 
 
-plotGraphs(subtract_mat[0,:],subtract_mat[1,:],subtract_mat[2,:],num_beam_coord_def[0,:], num_beam_coord_def[1,:],num_beam_coord_def[2,:])
+# plotGraphs(subtract_mat[0,:],subtract_mat[1,:],subtract_mat[2,:],num_beam_coord_def[0,:], num_beam_coord_def[1,:],num_beam_coord_def[2,:])
 
 #===============================================end section=====================================================#
 
@@ -536,12 +536,12 @@ plotGraphs(subtract_mat[0,:],subtract_mat[1,:],subtract_mat[2,:],num_beam_coord_
 # First Beam Mode Results shown below 
 #   #Edited, we no longer translate experimental data points (when we did we added 1.83 to x and -0.53285 to z)
 xa1, ya1, za1 = beamAverage(-1*exp_mode_beam[:,1,0],exp_mode_beam[:,1,1],exp_mode_beam[:,1,2], 0)
-plotGraphs(xa1, ya1, za1 ,num_mode_beam[:,7,0],num_mode_beam[:,7,1],num_mode_beam[:,7,2])
+# plotGraphs(xa1, ya1, za1 ,num_mode_beam[:,7,0],num_mode_beam[:,7,1],num_mode_beam[:,7,2])
   
 # //////////////////////////////////Results\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #///////////////////////add this to num x : -1.92577\\\\\\\\\\\\\\\\\\\\\\\\\
 #///////////////////////add this to num z : 0.532887\\\\\\\\\\\\\\\\\\\\\\\\\
-plotGraphs(num_beam_coord_def[0,:]-1.92577,num_beam_coord_def[1,:],num_beam_coord_def[2,:]+0.532887, exp_beam_coord[0,:],exp_beam_coord[1,:],exp_beam_coord[2,:])
+# plotGraphs(num_beam_coord_def[0,:]-1.92577,num_beam_coord_def[1,:],num_beam_coord_def[2,:]+0.532887, exp_beam_coord[0,:],exp_beam_coord[1,:],exp_beam_coord[2,:])
 
 
 
@@ -554,33 +554,28 @@ v = 8
 
 #Mode 2: Edited, we no longer translate experimental data points (when we did we added 1.83 to x and multiplied by -1 for z (kept the z change)
 xa2, ya2, za2 = beamAverage(exp_mode_beam[:,w,0],exp_mode_beam[:,w,1], -exp_mode_beam[:,w,2] + 0.532887 , 0)
-plotGraphs(xa2, ya2, za2 ,num_mode_beam[:,v,0],num_mode_beam[:,v,1],num_mode_beam[:,v,2])
-
-
-
-# plotGraphs(exp_mode_beam[:,w,0] + 1.7,exp_mode_beam[:,w,1],-1*exp_mode_beam[:,w,2] - 0.2,num_mode_beam[:,v,0],num_mode_beam[:,v,1],num_mode_beam[:,v,2])
-plotGraphs(exp_mode_beam[:,w,0] + 1.83,exp_mode_beam[:,w,1],-1*exp_mode_beam[:,w,2] ,num_mode_beam[:,v,0],num_mode_beam[:,v,1],num_mode_beam[:,v,2])
+# plotGraphs(exp_mode_beam[:,w,0] + 1.83,exp_mode_beam[:,w,1],-1*exp_mode_beam[:,w,2] ,num_mode_beam[:,v,0],num_mode_beam[:,v,1],num_mode_beam[:,v,2])
 
 # !!!!!!!!Can't use exp2 , num8 combo without improving beamAverage. The function does not account for overlapping x values even though divided by positive and negatie y values . Fix this later 
 
-#----------------method to match Beam frequencies of num (coord+mode) and exp (coord+mode) data by hand --------------------------
+#----------------USE THIS EXTENSIVELY WITH EACH NEW DATA SET method to match Beam frequencies of num (coord+mode) and exp (coord+mode) data by hand --------------------------
 # temporary close
-tri = 14  
-trid = 13
-plotGraphs(-exp_mode_beam[:,tri,0],exp_mode_beam[:,tri,1],exp_mode_beam[:,tri,2],[0],[0],[0])
-# print('Current Exp Frequency is ' + str(exp_data_beam['exp_freq'][0,tri]) + ' Hz')
-for fifa in range(trid,trid + 5): 
-    matching_mods = plt.figure()
-    ax4 = matching_mods.add_subplot(111, projection='3d')
-    ax4.scatter(num_mode_beam[:,fifa,0],num_mode_beam[:,fifa,1],num_mode_beam[:,fifa,2], c='b', marker='o')
-    plt.title('Num Frequency of ' + str(num_data_beam['num_freq'][0,fifa]) + ' Hz')
-    ax4.set_xlabel('X Label')
-    ax4.set_ylabel('Y Label')
-    ax4.set_zlabel('Z Label')
-    ax4.set_ylim([-2,2])
+# tri = 14  
+# trid = 13
+# plotGraphs(-exp_mode_beam[:,tri,0],exp_mode_beam[:,tri,1],exp_mode_beam[:,tri,2],[0],[0],[0])
+# # print('Current Exp Frequency is ' + str(exp_data_beam['exp_freq'][0,tri]) + ' Hz')
+# for fifa in range(trid,trid + 5): 
+#     matching_mods = plt.figure()
+#     ax4 = matching_mods.add_subplot(111, projection='3d')
+#     ax4.scatter(num_mode_beam[:,fifa,0],num_mode_beam[:,fifa,1],num_mode_beam[:,fifa,2], c='b', marker='o')
+#     plt.title('Num Frequency of ' + str(num_data_beam['num_freq'][0,fifa]) + ' Hz')
+#     ax4.set_xlabel('X Label')
+#     ax4.set_ylabel('Y Label')
+#     ax4.set_zlabel('Z Label')
+#     ax4.set_ylim([-2,2])
 
 #Uncomment this if you do not wish to see resulting data 
-plt.close('all')
+# plt.close('all')
 #========================================End of Visualizations===============================================================
 
 
@@ -768,12 +763,12 @@ beam_num_edited_full = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(n
 # -------------Former (Special grad3D section) EDITED Additional processing  -------------------
 beam_exp_full = np.delete(beam_exp_full, deleted_exp_beam_total, axis = 1 ) #deletes the extra experimental modes
 
-for kami_sec in range(1,(len(beam_exp_full[0]))): # You have to make sure that number of numerical frequencies and number of experimental frequencies match
+for kami_sec in range(len(beam_exp_full[0])): # You have to make sure that number of numerical frequencies and number of experimental frequencies match
     # reworked_x,reworked_y, reworked_z = grad3D(beam_num_edited_full[:,kami_sec,0],beam_num_edited_full[:,kami_sec,1],beam_num_edited_full[:,kami_sec,2],beam_exp_full[:,kami_sec,0],beam_exp_full[:,kami_sec,1],beam_exp_full[:,kami_sec,2])
     # beam_exp_full[:,kami_sec,0] = reworked_x
     # beam_exp_full[:,kami_sec,1] = reworked_y
-    if exception_flip_z[kami_sec] == -1:
-        beam_exp_full[:,kami_sec,2] = beam_exp_full[:,kami_sec,2]*exception_flip_z[kami_sec] + 0.8
+    # if exception_flip_z[kami_sec] == -1:
+    beam_exp_full[:,kami_sec,2] = beam_exp_full[:,kami_sec,2]*exception_flip_z[kami_sec] + 0.67 #see how this alters code
 
 print(beam_exp_full[:,1,2])
 
@@ -782,9 +777,9 @@ print(beam_exp_full[:,1,2])
  
 
 #==============Additional Visualisation to check if grad3D worked=======================
-plt.close('all')
-for cypher in range(len(beam_exp_full[0])):
-    plotGraphs(beam_exp_full[:,cypher,0],beam_exp_full[:,cypher,1],beam_exp_full[:,cypher,2],beam_num_edited_full[:,cypher,0],beam_num_edited_full[:,cypher,1],beam_num_edited_full[:,cypher,2])
+# plt.close('all')
+# for cypher in range(len(beam_exp_full[0])):
+#     plotGraphs(beam_exp_full[:,cypher,0],beam_exp_full[:,cypher,1],beam_exp_full[:,cypher,2],beam_num_edited_full[:,cypher,0],beam_num_edited_full[:,cypher,1],beam_num_edited_full[:,cypher,2])
 print(1)
 # =======================================================================================
 
@@ -816,40 +811,6 @@ def orderPhi (num_reduced_matrix, length_vec):
     return altered_working_matrix
        
 
-
-
-#calculates the mac matrix of an experimental and numerical data set of ngrid_rows x mode freq. columns 
-def calculateMAC (phi_exp, phi_num):
-    MAC_matrix = np.zeros((len(phi_exp[0]),len(phi_num[0])))
-    for i in range(len(phi_exp[0])):
-        for j in range(len(phi_num[0])):
-            t1 = np.matmul(np.transpose(phi_exp[:][i]),phi_num[:][j])
-            t2 = np.matmul(np.transpose(phi_exp[:][i]),phi_exp[:][i])
-            t3 = np.matmul(np.transpose(phi_num[:][j]),phi_num[:][j])
-            MAC_matrix[i][j] = ((abs(t1)**2)/(t2 * t3))**0.5 #check if this is even the right equation
-    mac_plot = plt.figure()
-    ax1 = mac_plot.add_subplot(111, projection = '3d')
-    #x_values = np.arange(0,len(MAC_matrix), 1)
-    #y_values = np.arange(0,len(MAC_matrix[0]), 1)
-    x_values = []
-    y_values = []
-    z_values = np.zeros((np.size(MAC_matrix))) #corrected
-    dx = np.ones(np.size(MAC_matrix))
-    dy = np.ones(np.size(MAC_matrix)) 
-    dz_values = []
-    for r in range(len(MAC_matrix)):
-        for c in range(len(MAC_matrix[0])):
-            dz_values.append(MAC_matrix[r][c])
-            x_values.append(r)
-            y_values.append(c)
-            # print(1)
-    
-    ax1.bar3d(x_values, y_values, z_values, dx, dy, dz_values )
-    plt.show()
-    return MAC_matrix
-
-
-
 def plotMAC(mac):
     mac_plot1 = plt.figure()
     ax5 = mac_plot1.add_subplot(111, projection = '3d')
@@ -869,6 +830,23 @@ def plotMAC(mac):
     ax5.bar3d(x_values1, y_values1, z_values1, dx1, dy1, dz_values1 )
     plt.show()
     return
+
+#calculates the mac matrix of an experimental and numerical data set of ngrid_rows x mode freq. columns 
+def calculateMAC (phi_exp, phi_num):
+    MAC_matrix = np.zeros((len(phi_exp),len(phi_num)))
+    for i in range(len(phi_num)):
+        for j in range(len(phi_exp)):
+            t1 = np.matmul(np.transpose(phi_num[i,:]),phi_exp[j,:])
+            t2 = np.matmul(np.transpose(phi_num[i,:]),phi_num[i,:])
+            t3 = np.matmul(np.transpose(phi_exp[j,:]),phi_exp[j,:])
+            
+            MAC_matrix[i,j] = (abs(t1)**2)/(t2 * t3) #check if this is even the right equation
+    plotMAC(MAC_matrix)
+    return MAC_matrix
+
+
+
+
     
 
 def singleMAC(phi_e, phi_n):
@@ -922,12 +900,22 @@ exp_modes_norm_mod = orderPhi(exp_modes_norm_self, freq_allowed_self_v1)
 #       self_mac_rgf[hotel2,hotel3,2] = self_mac_rgf[hotel2,hotel3,2] + 0.509
 
 working_matrix = np.delete(working_matrix, [3,4,5], axis = 2)
-working_matrix = orderPhi(working_matrix, freq_allowed)
+for lima in range(len(working_matrix)):
+    working_matrix[lima,:,2] = working_matrix[lima,:,2] + 0.509
+#used this to adjust the z coordinates globally (so they are on the same z plane)
 
+# working_matrix = orderPhi(working_matrix, freq_allowed)
+
+#!!!!!!!!!!!!!1 The Xhale needs preprocessing
 #exp
 exp_modes_norm = np.delete(exp_modes_norm, deleted_exp_freq, axis = 1)
-exp_modes_norm = orderPhi(exp_modes_norm, freq_allowed)
+for ua in range(len(exp_modes_norm[0])):
+    plotGraphs(exp_modes_norm[:,ua,0],exp_modes_norm[:,ua,1],exp_modes_norm[:,ua,2], working_matrix[:,ua,0], working_matrix[:,ua,1], working_matrix[:,ua,2])
 
+working_matrix = orderPhi(working_matrix, freq_allowed)
+
+exp_modes_norm = orderPhi(exp_modes_norm, freq_allowed)
+xhale_mac = calculateMAC(working_matrix, exp_modes_norm)
 
 #-------------Individual MAC for beam -------------------#
 ind_beam_num = orderPhi(beam_edited, [7]) # @3.28 hz 
@@ -952,13 +940,18 @@ beam_exp_full = orderPhi(beam_exp_full, [1,2,4,7,8,14])
 #numerical phi
 beam_num_edited_full  = orderPhi(beam_num_edited_full, freq_allowed_beam_total)
 
-mac_array_beam = np.zeros((len(beam_exp_full),len(beam_num_edited_full)))
-if len(beam_exp_full) == len(beam_num_edited_full):
-    for final1 in range (len(beam_num_edited_full)):
-        for final2 in range(len(beam_exp_full)):
-            mac_array_beam[final1, final2] = singleMAC(beam_exp_full[final2,:], beam_num_edited_full[final1,:])
-    plotMAC(mac_array_beam)
-        
+
+#Earlier test method for the beam
+# mac_array_beam = np.zeros((len(beam_exp_full),len(beam_num_edited_full)))
+# if len(beam_exp_full) == len(beam_num_edited_full):
+#     for final1 in range (len(beam_num_edited_full)):
+#         for final2 in range(len(beam_exp_full)):
+#             mac_array_beam[final1, final2] = singleMAC(beam_exp_full[final2,:], beam_num_edited_full[final1,:])
+#     plotMAC(mac_array_beam)
+
+# check_MAC_large = calculateMAC(beam_exp_full, beam_num_edited_full)
+beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full)
+
 
     # ------Temporary use of singleMac function-----
 
