@@ -94,12 +94,17 @@ print(freq_allowed)
 
 
 #------------Frequencies allowed for beam data 
-freq_allowed_beam_total = [7,8,9,10,12,13]
-deleted_exp_beam_total = [0,3,5,6,9,10,11,12,13,15]
-exception_list = [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-exception_flip_z = [1,-1,-1,1,-1,-1]
+freq_allowed_beam_total = [7,8,9,10,12,13]  #enter in indicies of correct num freq and exp freq matched here !!!
+good_exp_beam_data = [1,2,4,7,8,14]
 
+temp_range_vec = range(0,len(exp_data_beam['exp_freq'][0]))
+deleted_exp_beam_total = np.delete(temp_range_vec,good_exp_beam_data)
+# deleted_exp_beam_total = [0,3,5,6,9,10,11,12,13,15]
+# exception_list = [0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0]
+#exception_flip_z = [1,-1,-1,1,-1,-1]
 
+exception_flip_z = [1,1,1,1,1,1]
+exception_list = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 # =====================================================================================================================
 
@@ -169,15 +174,16 @@ def plotGraphs (x1,y1,z1,x2,y2,z2):
     ax3 = fig3.add_subplot(111, projection='3d')
     
     ax3.scatter(x1, y1, z1, c='b', linestyle='-', marker='o')
-    # ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
+    ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
 
     ax3.scatter(x2, y2, z2, c='r',linestyle='-', marker='o')
-    # ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
+    ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
 
     ax3.set_xlabel('X Label')
     ax3.set_ylabel('Y Label')
     ax3.set_zlabel('Z Label')
     ax3.set_ylim([-2,2])
+    ax3.view_init(azim=-90, elev=0)
     return
 
 class compGrid: 
@@ -434,9 +440,9 @@ grids_matched_beam  = np.asarray(organizeGrids(num_data_beam['num_coordinates_in
 #--------Adding Mode amplitude to NUMERICAL u-shape coordinates 
 for igloo in range(len(mode_shapes_reduced_total)): 
     for jacob in range(len(mode_shapes_reduced_total[0])):
-        mode_shapes_reduced_total[igloo,jacob,0] = mode_shapes_reduced_total[igloo,jacob,0] + num_sim_static_coords[0,igloo] #x component
-        mode_shapes_reduced_total[igloo,jacob,1] = mode_shapes_reduced_total[igloo,jacob,1] + num_sim_static_coords[1,igloo] #y component
-        mode_shapes_reduced_total[igloo,jacob,2] = mode_shapes_reduced_total[igloo,jacob,2] + num_sim_static_coords[2,igloo] #z component
+        mode_shapes_reduced_total[igloo,jacob,0] = mode_shapes_reduced_total[igloo,jacob,0] #+ num_sim_static_coords[0,igloo] #x component
+        mode_shapes_reduced_total[igloo,jacob,1] = mode_shapes_reduced_total[igloo,jacob,1] #+ num_sim_static_coords[1,igloo] #y component
+        mode_shapes_reduced_total[igloo,jacob,2] = mode_shapes_reduced_total[igloo,jacob,2] #+ num_sim_static_coords[2,igloo] #z component
 
 #debug section
 #plotGraphs(mode_shapes_reduced_total[:,6,0],mode_shapes_reduced_total[:,6,1],mode_shapes_reduced_total[:,6,2],pelican1[0,:],pelican1[1,:],pelican1[2,:])
@@ -445,31 +451,28 @@ for igloo in range(len(mode_shapes_reduced_total)):
 #---------Adding mode aplitude to EXPERIMENTAL u-shape coordinates Entire MAC
 for igloo2 in range(len(exp_modes_norm)):
     for jacob2 in range(len(exp_modes_norm[0])):
-        exp_modes_norm[igloo2,jacob2,0] = exp_modes_norm[igloo2,jacob2,0] + exp_data['exp_coordinates'][0][igloo2] 
-        exp_modes_norm[igloo2,jacob2,1] = exp_modes_norm[igloo2,jacob2,1] + exp_data['exp_coordinates'][1][igloo2] 
-        exp_modes_norm[igloo2,jacob2,2] = exp_modes_norm[igloo2,jacob2,2] + exp_data['exp_coordinates'][2][igloo2] 
-        #exp_modes_norm[igloo2,jacob2,:] =  exp_modes_norm[igloo2,jacob2,:] + exp_data['exp_coordinates'][:,igloo2]
+        exp_modes_norm[igloo2,jacob2,0] = exp_modes_norm[igloo2,jacob2,0] #+ exp_data['exp_coordinates'][0][igloo2] 
+        exp_modes_norm[igloo2,jacob2,1] = exp_modes_norm[igloo2,jacob2,1] #+ exp_data['exp_coordinates'][1][igloo2] 
+        exp_modes_norm[igloo2,jacob2,2] = exp_modes_norm[igloo2,jacob2,2] #+ exp_data['exp_coordinates'][2][igloo2] 
 
 #debug section
 #plotGraphs(exp_modes_norm[:,1,0],exp_modes_norm[:,1,1],exp_modes_norm[:,1,2],pelican2[0,:],pelican2[1,:],pelican2[2,:])
 
-#---------Adding mode aplitude to EXPERIMENTAL u-shape coordinates Individual MAC (This is just a precaution in case code is manipulated above)
+#--------- Individual MAC Adding mode aplitude to EXPERIMENTAL u-shape coordinates  (This is just a precaution in case code is manipulated above)
 for igloo3 in range(len(exp_modes_norm_self)):
     for jacob3 in range(len(exp_modes_norm_self[0])):
-        # exp_modes_norm_self[igloo3,jacob3,0] = exp_modes_norm_self[igloo3,jacob3,0] + exp_data['exp_coordinates'][0][igloo3] 
-        # exp_modes_norm_self[igloo3,jacob3,1] = exp_modes_norm_self[igloo3,jacob3,1] + exp_data['exp_coordinates'][1][igloo3] 
         exp_modes_norm_self[igloo3,jacob3,:] = exp_modes_norm_self[igloo3,jacob3,:] + exp_data['exp_coordinates'][:,igloo3] 
 
 
 
 #--------       ------------- Beam section: Add Mode to beam coord data-------------   ----------------
-
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! marker to comment exp_beam_coord
 #----Experimental data ---------------
 for juliet in range(len(exp_mode_beam)):
     for kilo in range(len(exp_mode_beam[0])):
-        exp_mode_beam[juliet,kilo,0] = exp_mode_beam[juliet,kilo,0] + exp_beam_coord[0,juliet]
-        exp_mode_beam[juliet,kilo,1] = exp_mode_beam[juliet,kilo,1] + exp_beam_coord[1,juliet] 
-        exp_mode_beam[juliet,kilo,2] = exp_mode_beam[juliet,kilo,2] + exp_beam_coord[2,juliet]
+        exp_mode_beam[juliet,kilo,0] = exp_mode_beam[juliet,kilo,0] #+ exp_beam_coord[0,juliet]
+        exp_mode_beam[juliet,kilo,1] = exp_mode_beam[juliet,kilo,1] #+ exp_beam_coord[1,juliet] 
+        exp_mode_beam[juliet,kilo,2] = exp_mode_beam[juliet,kilo,2] #+ exp_beam_coord[2,juliet]
 
 # pelican4 = num_beam_coord.copy()
 # pelican4 = num_mode_beam.copy()
@@ -480,11 +483,11 @@ for juliet in range(len(exp_mode_beam)):
 
 # Step 1: Separate static deformation from coord + def 
 subtract_mat = np.zeros(((len(num_beam_coord)),(len(num_beam_coord[0]))))
-
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Comment to comment out num_beam_coord
 for jackson in range(len(num_beam_coord_def[0])):
-    subtract_mat[0,jackson] = num_beam_coord_def[0,jackson] - num_beam_coord[0,jackson]
-    subtract_mat[1,jackson] = num_beam_coord_def[1,jackson] - num_beam_coord[1,jackson]
-    subtract_mat[2,jackson] = num_beam_coord_def[2,jackson] - num_beam_coord[2,jackson]
+    subtract_mat[0,jackson] = num_beam_coord_def[0,jackson] #- num_beam_coord[0,jackson]
+    subtract_mat[1,jackson] = num_beam_coord_def[1,jackson] #- num_beam_coord[1,jackson]
+    subtract_mat[2,jackson] = num_beam_coord_def[2,jackson] #- num_beam_coord[2,jackson]
 
     
 # Step 2: Use this static def to remove the static def from the total modes
@@ -493,10 +496,18 @@ for hector in range(len(num_mode_beam)):
         num_mode_beam[hector,hector2,0] = num_mode_beam[hector,hector2,0] - subtract_mat[0,hector]
         num_mode_beam[hector,hector2,1] = num_mode_beam[hector,hector2,1] - subtract_mat[1,hector]
         num_mode_beam[hector,hector2,2] = num_mode_beam[hector,hector2,2] - subtract_mat[2,hector]
-#!!!!!!!!!this would be a good place to normalize data, wait no experimental 
 
-# plotGraphs(subtract_mat[0,:],subtract_mat[1,:],subtract_mat[2,:],num_beam_coord_def[0,:], num_beam_coord_def[1,:],num_beam_coord_def[2,:])
 
+# -----------Normalize beam numerical data-------------------
+num_mode_beam[:,:,0] = num_mode_beam[:,:,0] - 1.92577 
+num_mode_beam[:,:,2] = num_mode_beam[:,:,2] + 0.532887
+for centaur in range ((len(num_mode_beam[0]))):
+    max_index = np.where(np.abs(num_mode_beam[:,centaur,2]) > 0, np.abs(num_mode_beam[:,centaur,2]), np.inf).argmax()
+    max_pos_neg = num_mode_beam[max_index,centaur,2]
+    print(max_pos_neg)
+    for pos_run in range (len(num_mode_beam)): 
+            num_mode_beam[pos_run,centaur,2] = num_mode_beam[pos_run,centaur,2]/max_pos_neg
+  
 #===============================================end section=====================================================#
 
 
@@ -600,72 +611,6 @@ xa2, ya2, za2 = beamAverage(exp_mode_beam[:,w,0],exp_mode_beam[:,w,1], -exp_mode
         #-----Should there be a contingency for zero slope case?-----
 
 
-# !!!!!!!!!!!!!! THIS IS IN THE WRONG ORDER!!!!!! (NEED TO USE MAX IDEA, too many excetions to the slope rule)
-def grad3D (num_x, num_y, num_z,exp_x,exp_y,exp_z):
-    # SINGLE MODE intake the numerical data (coord+mode) and exp data (coord+mode)  and list of exception indices. Exc indicies rotate along z axis 
-    #make sure to put in the averaged values and gridMatched values for the beam here    
-    
-    #Run through exceptions list (note I'm adjusting x data here instead of num data)
-    # if exc == True :
-    #     for pre_i in range(len(exp_x)):
-    #         exp_x[pre_i] = -1*exp_x[pre_i]
-
-    # #Step 1
-    # exp_vals = list()
-    # num_vals = list()
-    # for i in range(len(exp_x)): 
-    #     exp_vals.append(compGrid(exp_y[i], exp_x[i], None,exp_z[i], None, None))
-    # for i2 in range(len(num_x)):
-    #     num_vals.append(compGrid(num_y[i2], num_x[i2], None, num_z[i2], None, None))
-    
-    # # Step 2 
-    # exp_vals = sorted(exp_vals, key = lambda compGrid: compGrid.x, reverse = True)
-    # num_vals = sorted(num_vals, key = lambda compGrid: compGrid.x, reverse = True)
-    # # Step 3 
-    # slope_exp = (exp_vals[2].z - exp_vals[1].z)/(exp_vals[2].x - exp_vals[1].x) #after further review we want to avoid absolute end points because they sometimes curve inward towards the shape
-    # slope_num = (num_vals[2].z - num_vals[1].z)/(num_vals[2].x - num_vals[1].x)
-    
-    
-    # # This graph is off center relative to z, so if z has a higher negative value it is most likely off
-    # if slope_num > 0 and slope_exp < 0:
-    #     for tamper in range(len(exp_vals)):
-    #         exp_vals[tamper].z = -1*exp_vals[tamper].z
-    # if slope_num < 0 and slope_exp > 0 :
-    #     for tamper2 in range(len(exp_vals)):
-    #         exp_vals[tamper2].z = -1*exp_vals[tamper2].z
-    # #returning exp data, not numeric data to avoid 3d matrix problem
-    
-    # corr_x = []
-    # corr_y = []
-    # corr_z = []
-    
-    # for m in range(len(exp_vals)):
-    #     corr_x = np.append(corr_x,exp_vals[m].x)                #corected x, etcetera 
-    #     corr_y = np.append(corr_y,exp_vals[m].y)
-    #     corr_z = np.append(corr_z,exp_vals[m].z)
-    abs_exp_z = []
-    abs_num_z = []
-    for trudy in range(len(exp_z)):
-        abs_exp_z = np.append(abs_exp_z,abs(exp_z[trudy]))
-    
-    for trudy2 in range(len(num_z)):
-        abs_num_z = np.append(abs_num_z,abs(num_z[trudy2]))
-    
-    cond_1 = np.where(abs_exp_z > 0, abs_exp_z, np.inf).argmax() #finds the maximum possible value (even if negative and returns index)
-    cond_2 = np.where(abs_num_z > 0, abs_num_z, np.inf).argmax()
-    # take both max negative and max positve, compare absolute value
-    if exp_z[cond_1] < 0 and num_z[cond_2] > 0:
-        for tamper1 in range(len(exp_z)):
-            exp_z[tamper1] = -1*exp_z[tamper1]    
-    
-    if exp_z[cond_1] > 0 and num_z[cond_2] < 0:
-        for tamper2 in range(len(exp_z)):
-            exp_z[tamper2] = -1*exp_z[tamper2]
-    
-
-    plotGraphs(exp_x,exp_y,exp_z,num_x,num_y,num_z)
-    return exp_x, exp_y, exp_z
-
 
 
 
@@ -701,9 +646,9 @@ def remove_Grid_Freq (total_grids, mode_shapes_reduced_dummy, freq_we_want, grid
 
     
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!Global Readjustment to experimental data locatio DO NOT TOUCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-num_mode_beam[:,:,0] = num_mode_beam[:,:,0] - 1.92577 
-num_mode_beam[:,:,2] = num_mode_beam[:,:,2] + 0.532887
+# !!!!!!!!!!!!!!!!!!!!!!!!!Global Readjustment to experimental data location DO NOT TOUCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# num_mode_beam[:,:,0] = num_mode_beam[:,:,0] - 1.92577 
+# num_mode_beam[:,:,2] = num_mode_beam[:,:,2] + 0.532887
 # !!!!!!!!!!!!!!!!!!!!!!!!!Global Readjustment to experimental data locatio DO NOT TOUCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -760,17 +705,9 @@ beam_num_edited_full = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(n
 # if statement about numerical and experimental frequencies matching (use quit() command)
 
 
-# -------------Former (Special grad3D section) EDITED Additional processing  -------------------
+# -------------(Former Special grad3D section) EDITED Additional processing  -------------------
 beam_exp_full = np.delete(beam_exp_full, deleted_exp_beam_total, axis = 1 ) #deletes the extra experimental modes
 
-for kami_sec in range(len(beam_exp_full[0])): # You have to make sure that number of numerical frequencies and number of experimental frequencies match
-    # reworked_x,reworked_y, reworked_z = grad3D(beam_num_edited_full[:,kami_sec,0],beam_num_edited_full[:,kami_sec,1],beam_num_edited_full[:,kami_sec,2],beam_exp_full[:,kami_sec,0],beam_exp_full[:,kami_sec,1],beam_exp_full[:,kami_sec,2])
-    # beam_exp_full[:,kami_sec,0] = reworked_x
-    # beam_exp_full[:,kami_sec,1] = reworked_y
-    # if exception_flip_z[kami_sec] == -1:
-    beam_exp_full[:,kami_sec,2] = beam_exp_full[:,kami_sec,2]*exception_flip_z[kami_sec] + 0.67 #see how this alters code
-
-print(beam_exp_full[:,1,2])
 
 
 # =================================end section=========================================
@@ -780,7 +717,6 @@ print(beam_exp_full[:,1,2])
 # plt.close('all')
 # for cypher in range(len(beam_exp_full[0])):
 #     plotGraphs(beam_exp_full[:,cypher,0],beam_exp_full[:,cypher,1],beam_exp_full[:,cypher,2],beam_num_edited_full[:,cypher,0],beam_num_edited_full[:,cypher,1],beam_num_edited_full[:,cypher,2])
-print(1)
 # =======================================================================================
 
 
@@ -906,11 +842,11 @@ for lima in range(len(working_matrix)):
 
 # working_matrix = orderPhi(working_matrix, freq_allowed)
 
-#!!!!!!!!!!!!!1 The Xhale needs preprocessing
+#!!!!!!!!!!!!!1 The Xhale needs preprocessing flipping W to M 
 #exp
 exp_modes_norm = np.delete(exp_modes_norm, deleted_exp_freq, axis = 1)
-for ua in range(len(exp_modes_norm[0])):
-    plotGraphs(exp_modes_norm[:,ua,0],exp_modes_norm[:,ua,1],exp_modes_norm[:,ua,2], working_matrix[:,ua,0], working_matrix[:,ua,1], working_matrix[:,ua,2])
+# for ua in range(len(exp_modes_norm[0])):
+#     plotGraphs(exp_modes_norm[:,ua,0],exp_modes_norm[:,ua,1],exp_modes_norm[:,ua,2], working_matrix[:,ua,0], working_matrix[:,ua,1], working_matrix[:,ua,2])
 
 working_matrix = orderPhi(working_matrix, freq_allowed)
 
@@ -923,22 +859,30 @@ mac_number = singleMAC(za1, ind_beam_num)
 mac_number_test = singleMAC(za1,za1)
 print(mac_number)
 #just take the z values from the averaged beam data!!!!!!
-plotGraphs (beam_edited[:,0,0],beam_edited[:,0,1],beam_edited[:,0,2], xa1,ya1,za1)
+# plotGraphs (beam_edited[:,0,0],beam_edited[:,0,1],beam_edited[:,0,2], xa1,ya1,za1)
 
 # @6.36 hz num
 ind_beam_num2 = orderPhi(beam_edited2,[8])
 mac_number2 = singleMAC(za2,ind_beam_num2)
 print(mac_number2)
 
-plotGraphs (beam_edited2[:,0,0],beam_edited2[:,0,1],beam_edited2[:,0,2], xa2,ya2,za2)
+# plotGraphs (beam_edited2[:,0,0],beam_edited2[:,0,1],beam_edited2[:,0,2], xa2,ya2,za2)
 
 
 #------------------Full Mac for beam-------------------------#
 #experimental phi
 # beam_exp_full = orderPhi(beam_exp_full, np.delete((range(0,(len(exp_data_beam['exp_freq'][0])))), deleted_exp_beam_total))
-beam_exp_full = orderPhi(beam_exp_full, [1,2,4,7,8,14])
+
+
+plt.close('all')    #Use this later 
+for ua2 in range(len(beam_exp_full[0])):
+    plotGraphs(beam_exp_full[:,ua2,0],beam_exp_full[:,ua2,1],beam_exp_full[:,ua2,2], beam_num_edited_full[:,ua2,0], beam_num_edited_full[:,ua2,1], beam_num_edited_full[:,ua2,2])
+    # plotGraphs( [0],[0],[0],beam_num_edited_full[:,ua2,0],beam_num_edited_full[:,ua2,1],beam_num_edited_full[:,ua2,2])
+
+beam_exp_full = orderPhi(beam_exp_full, good_exp_beam_data)
 #numerical phi
 beam_num_edited_full  = orderPhi(beam_num_edited_full, freq_allowed_beam_total)
+
 
 
 #Earlier test method for the beam
@@ -952,6 +896,7 @@ beam_num_edited_full  = orderPhi(beam_num_edited_full, freq_allowed_beam_total)
 # check_MAC_large = calculateMAC(beam_exp_full, beam_num_edited_full)
 beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full)
 
+# Normalization at line 504
 
     # ------Temporary use of singleMac function-----
 
@@ -1060,6 +1005,39 @@ beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full)
                             #             break
 #    return freqIndicies
 #might try using three check version, the problem with this one is that if the 2nd entry after the search point is larger, then the code will not work  
+
+# for kami_sec in range(len(beam_exp_full[0])): # You have to make sure that number of numerical frequencies and number of experimental frequencies match
+#     beam_exp_full[:,kami_sec,2] = beam_exp_full[:,kami_sec,2]*exception_flip_z[kami_sec] + 0.67 #see how this alters code
+#     #grad3D would have been called here  #The beam offset (above would have made it easier to compare the num and exp after being flipped, Bilal and I determined it should no longer be applied because it would throw off the MAC calculations)
+# # print(beam_exp_full[:,1,2])
+
+
+
+#grad3D was supposed to be called to correct mode shapes flipped over the x axis, but turned out to not be useful because it could not be applied uniformly to all modes
+# def grad3D (num_x, num_y, num_z,exp_x,exp_y,exp_z):
+
+#     abs_exp_z = []
+#     abs_num_z = []
+#     for trudy in range(len(exp_z)):
+#         abs_exp_z = np.append(abs_exp_z,abs(exp_z[trudy]))
+    
+#     for trudy2 in range(len(num_z)):
+#         abs_num_z = np.append(abs_num_z,abs(num_z[trudy2]))
+    
+#     cond_1 = np.where(abs_exp_z > 0, abs_exp_z, np.inf).argmax() #finds the maximum possible value (even if negative and returns index)
+#     cond_2 = np.where(abs_num_z > 0, abs_num_z, np.inf).argmax()
+#     # take both max negative and max positve, compare absolute value
+#     if exp_z[cond_1] < 0 and num_z[cond_2] > 0:
+#         for tamper1 in range(len(exp_z)):
+#             exp_z[tamper1] = -1*exp_z[tamper1]    
+    
+#     if exp_z[cond_1] > 0 and num_z[cond_2] < 0:
+#         for tamper2 in range(len(exp_z)):
+#             exp_z[tamper2] = -1*exp_z[tamper2]
+    
+
+#     plotGraphs(exp_x,exp_y,exp_z,num_x,num_y,num_z)
+#     return exp_x, exp_y, exp_z
 
 
 #===================================================Bilal Prior Code======================================#
