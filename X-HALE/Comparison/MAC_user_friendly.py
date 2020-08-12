@@ -1,3 +1,9 @@
+# Torrence Gue
+# A2SRL Lab
+# GSI Supervisor: Bilal Sharqi
+# Date of Submission: August 11, 2020
+# XHALE and Beam MAC Analysis Script (User Friendly Version)
+
 import numpy as np
 import os
 import pyuff
@@ -11,17 +17,33 @@ style.use('ggplot')
 
 plt.close("all")
 
-#need to reduce data from xhale and beam vis 
-#Full Mac for xhale and plot values of manual and xhale automatic
+
+
+# User please edit from Step 0 through Step 3 to complete MAC analysis:
+
+#     Table of Contents: 
+#         Step 0   - Line 40
+#         Step 1   - Line 63
+#         Step 2.a - Line 97
+#         Step 2.b - Line 118
+#         Step 2.c - Line 128
+#         Step 2.d - Line 140
+#         Step 3.a - Line 155
+#         Step 3.b - Line 159
+        
+        
+
+
+#See where to find Full MAC Tables and .MAT data conventions in Appendix on Line 906: 
 #==========================================Load Data Section ==========================================================
 
 # Step 0: Load your Numerical and Experimental Files
 
-#XHALE MAC
+#----------XHALE MAC Data------------------------
 num_file = 'NASTRAN_mode_shapes_out.mat' #Num XHALE Here
 exp_file = 'xhale_exp_data.mat' #Exp XHALE Here
 
-exp_data = sio.loadmat(exp_file)
+exp_data = sio.loadmat(exp_file) #do not touch these
 num_data = sio.loadmat(num_file)
 
 
@@ -32,39 +54,47 @@ exp_file_beam = 'beam_exp_data_copy.mat' #Exp beam here
 num_data_beam = sio.loadmat(num_file_beam)
 exp_data_beam = sio.loadmat(exp_file_beam)
 
-
-#-------Data for Undeformed Exoerimental Test Case  --------#
-file_name = 'gvt1all_copy.unv' #don't worry about this, this is the undeformed xhale 
-uff_file = pyuff.UFF(file_name)
-
-types_of_sets = uff_file.get_set_types()
-
-data = uff_file.read_sets()
-
-
-# locations of accelerometers (or nodes) for UNDEFORMED TEST CASE
-coordinates_exp = []
-for sub in data: 
-    if sub['type'] == 15: 
-
-        coordinates_exp = [sub['x'],sub['y'],sub['z']]
-        break
-#------End of Data for Undeformed Test Case -------#
 # ==============================================================================================================
-
-
 
 
 
 #====================================Grid and Frequency Section (Determine what type of comparison you want to do)==================================================
 
-# STEP 1 DECIDE WHICH COMPARISON YOU WISH TO MAKE: XHALE MAC, INDIVIDUAL XHALE MAC, FULL BEAM MAC
-manual_mac_display = False
-individual_mac_display = False
-beam_mac_display = False
-full_mac_beam_display = False
+# STEP 1: DECIDE WHICH COMPARISON YOU WISH TO MAKE: XHALE MAC, INDIVIDUAL XHALE MAC, FULL BEAM MAC
+    # If you need help determining frequencies matching exp frequencies to graphs from simulated data use the Sort tool below'
+        #Important Notes: 
+                # - For your convenience, all other graphs for MAC and mode shapes will not display until you comment help_sort = False
+                # - You can only do one type of comparison at a time (i.e. manual, auto XHALE, individual XHALE, full MAC Beam) 
+                # - If you use the Sort tool, please make sure you have some indicies in the frequencies 
+                #         - After you finish Replace the frequencies ONLY after you determine which specific frequencies that you want 
+        #Instructions to use Sort tool:
+                # - Enter in the experimental frequency index you want to see/match into exp_target_mode 
+                # - Enter in the numerical frequency index you want to see/match into num_mode_start. The Tool will show you this mode shape as well as the next two mode shapes after using the next two frequency indexes
 
-# Step 1a: If you want to use only manually sorted data: (Otherwise ignore this section and script will use organizedGrids) 
+#------Step 1 User Edit this Section (Mark True by the test you wish to make) --------------------------------
+manual_mac_display = False
+auto_mac_display = False 
+individual_mac_display = False
+full_mac_beam_display = False 
+
+help_sort = False
+exp_target_mode = 1     #Enter the experimental mode you want to match here
+num_mode_start = 8     #Enter the simulated mode that you want to see here. It shows this mode plus the next 2 modes
+#---------------------------------------------------------
+
+#See STEP 2a on line 81
+
+
+#Sort Tool
+if help_sort == True:
+    help_sort_this = [manual_mac_display,auto_mac_display,individual_mac_display,full_mac_beam_display]
+    
+    manual_mac_display = False
+    auto_mac_display = False 
+    individual_mac_display = False
+    full_mac_beam_display = False 
+    
+# Step 2a: If you want to use only manually sorted data: (Otherwise ignore this section and script will use organizedGrids) 
 #     - put grid points put the grid points in 'grids_uni_le_te'
 #     - put idicies of interested numerical frequencies in freq_allowed
 #     - list indicies of experimental data frequencies you are not interested in in the 'deleted_exp_freq'
@@ -79,13 +109,23 @@ freq_allowed = [6, 8, 12, 13, 19, 20 ]
 
 #Indicies of ignored experiment frequencies
 temp_exp_range_manual = range(0,len(exp_data['exp_freq'][0]))
-deleted_exp_freq = [0,3,4,7,9]
+deleted_exp_freq_manual = [0,3,4,7,9]
 
-manual_good_exp_freq = np.delete(temp_exp_range_manual, deleted_exp_freq) #testing first fundamental modes at 1.01 exp freq
+manual_good_exp_freq = np.delete(temp_exp_range_manual, deleted_exp_freq_manual) #testing first fundamental modes at 1.01 exp freq
 
     #----------------End of Manually Sorted --------------------#
 
-# Step 1b: If you want to complete a Self MAC: (Otherwise ignore this section)
+# Step 2b: If you want to complete an XHALE MAC (autosort): (Otherwise ignore this section)
+    # - Enter the numerical freq index you want to use in 'freq_allowed_self_v1'
+    # - Enter the experimental freq index you want to use in 'individual_exp_freq'
+
+freq_allowed_auto = [6, 8, 12, 13, 19, 20 ]
+temp_exp_range_auto = range(0,len(exp_data['exp_freq'][0]))
+deleted_exp_freq_auto = [0,3,4,7,9]
+
+auto_good_exp_freq = np.delete(temp_exp_range_auto, deleted_exp_freq_auto)
+
+# Step 2c: If you want to complete a Self MAC: (Otherwise ignore this section)
     # - Enter the numerical freq index you want to use in 'freq_allowed_self_v1'
     # - Enter the experimental freq index you want to use in 'individual_exp_freq'
 
@@ -97,7 +137,7 @@ temp_exp_range = range(0,len(exp_data['exp_freq'][0]))
 deleted_exp_freq_self_v1 = np.delete(temp_exp_range, individual_exp_freq) #testing first fundamental modes at 1.01 exp freq
     #-----------End of Individual MAC -------------------------#
 
-# Step 1c: If you want to complete a MAC on a beam (or some other object): (Otherwise ignore this section)
+# Step 2d: If you want to complete a MAC on a beam (or some other object): (Otherwise ignore this section)
     # - Enter the numerical freq indices you want to use in 'freq_allowed_total_beam'
     # - Enter the experimental freq indices you want to use in 'good_exp_beam_data'
     # - This MAC has a global translation to translate all numerical data to the position of the experimental data. This can be adjusted in lines 469 and 470
@@ -111,12 +151,12 @@ deleted_exp_beam_total = np.delete(temp_range_vec,good_exp_beam_data)
 
 
 
-
-#Step 2a: Set the offset for the XHALE (Translates numerical data to experimental data ONLY Z )
+# STEP 3: Input the offsets of the XHALE
+#Step 3a: Set the offset for the XHALE (Translates numerical data to experimental data ONLY Z )
 XHALE_offset_x = 0.0
 XHALE_offset_z = 0.509
 
-#Step 2b: Set offset (x and z offset for Beam data)
+#Step 3b: Set offset (x and z offset for Beam data)
 beam_offset_x = -1.92577
 beam_offset_z = 0.532887
 
@@ -164,8 +204,6 @@ num_mode_beam = num_mode_beam.transpose((2,0,1))
                      
 
 
-
-
 # Pseudo code compGrid
     #do not read in z values
     #assign grid point I.D.s to each set of coordinates  
@@ -175,17 +213,18 @@ num_mode_beam = num_mode_beam.transpose((2,0,1))
     #Implement contingency:
         #Bilal idea: if there are three or more values reduce to smallest tolerance (really small)
 
-def plotGraphs (x1,y1,z1,x2,y2,z2):
+def plotGraphs (x1,y1,z1,x2,y2,z2, with_lines):
     #Function plots two scatter graphs on top of each other. Enter [0] into x2,y2,z2, if you only want one scatter plot
 
     fig3 = plt.figure()
     ax3 = fig3.add_subplot(111, projection='3d')
     
-    ax3.scatter(x1, y1, z1, c='b', linestyle='-', marker='o')
-    ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
-
     ax3.scatter(x2, y2, z2, c='r',linestyle='-', marker='o')
-    ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
+    ax3.scatter(x1, y1, z1, c='b', linestyle='-', marker='o')
+
+    if with_lines == True:
+        ax3.plot(x2, y2, z2, c='r',linestyle='-', marker='o')
+        ax3.plot(x1, y1, z1, c='b', linestyle='-', marker='o')
 
     ax3.set_xlabel('X Label')
     ax3.set_ylabel('Y Label')
@@ -205,10 +244,21 @@ class compGrid:
         self.xt = x_tol #x tolerance
 
 
-def organizeGrids (y_in, x_in, z_in, g_in, exp_in_y, exp_in_x, exp_in_z):
+def organizeGrids (y_in, x_in, z_in, g_in, exp_in_y, exp_in_x, exp_in_z, display_graph):
     #Function takes input of y coord_num, x_coord_num, z_coord_num, grid points of numerical data, y coord_exp, x_coord_exp, z_coord_exp
     #Function matches numerical grids to experimental grid points and returns matrix of grid number ID's and a scatter plot of both data sets, (numerical in red, experimental in blue )
     #del_list = []
+    
+    # Input arguments: 
+    #     y_in: array of num y coordinates
+    #     x_in: array of num x coordinates
+    #     z_in: array of num z coordinates
+    #     g_in: array of all num grid IDs
+    #     exp_in_y: array of exp y coordinates
+    #     exp_in_x: array of exp x coordinates
+    #     exp_in_z: array of exp z coordinates
+    #     display_graph: true/false value of wheather the display of the matched grid coordinates should be displayed
+    
     returned_grid_matrix = []
     x_s = []
     y_s = []
@@ -340,16 +390,16 @@ def organizeGrids (y_in, x_in, z_in, g_in, exp_in_y, exp_in_x, exp_in_z):
         z_s = np.append(z_s, temp_list2[0].z)
        
         
-                
-    fig1 = plt.figure()
-    ax1 = fig1.add_subplot(111, projection='3d')
-    
-    ax1.scatter(np.round(x_s[:],4), np.round(y_s[:],4), np.round(z_s[:],4), c='r', marker='o')
-    ax1.scatter(exp_in_x, exp_in_y, exp_in_z, c='b', marker='o')
-    ax1.set_xlabel('X Label')
-    ax1.set_ylabel('Y Label')
-    ax1.set_zlabel('Z Label')
-    #fig1.show()
+    if display_graph == True:            
+        fig1 = plt.figure()
+        ax1 = fig1.add_subplot(111, projection='3d')
+        
+        ax1.scatter(np.round(x_s[:],4), np.round(y_s[:],4), np.round(z_s[:],4), c='r', marker='o')
+        ax1.scatter(exp_in_x, exp_in_y, exp_in_z, c='b', marker='o')
+        ax1.set_xlabel('X Label')
+        ax1.set_ylabel('Y Label')
+        ax1.set_zlabel('Z Label')
+        plt.title('Matched grid coordinates: Exp in Blue, Num in Red')
     return returned_grid_matrix
     
 #Averaging function for beam 
@@ -381,6 +431,14 @@ def normalizeNumData (data_mode):
 
 #========================Section to call organizeGrids function ========================================#
 
+
+#----Auto Sorted Sections (Excluding Manual MAC)
+xhale_display = False #determines whether or not to show the xhale based on if xhale mac or individual mac is requested
+if individual_mac_display == True or auto_mac_display == True:
+    xhale_display = True
+
+
+
 #static deformation + coordinate data 
 num_sim_static_coords = np.delete(num_data['num_mode_shapes'][0][1],[3, 4, 5], axis = 0)
 num_sim_static_coords = np.add(num_sim_static_coords, num_data['num_coordinates'])
@@ -388,20 +446,33 @@ num_sim_static_coords = np.add(num_sim_static_coords, num_data['num_coordinates'
 
 # Static Case Deformed ('U' Shape)
 grids_matched_def = []
-grids_matched_def = organizeGrids(num_sim_static_coords[1,:],num_sim_static_coords[0,:],num_sim_static_coords[2,:], all_grids, exp_data['exp_coordinates'][1], exp_data['exp_coordinates'][0], exp_data['exp_coordinates'][2])
-
-
-#Static Case Undeformed ('Flat' Shape) 
-grids_matched_static_test = []
-grids_matched_static_test = organizeGrids(num_data['num_coordinates'][1], num_data['num_coordinates'][0],num_data['num_coordinates'][2], all_grids, coordinates_exp[1], coordinates_exp[0], coordinates_exp[2])
+grids_matched_def = organizeGrids(num_sim_static_coords[1,:],num_sim_static_coords[0,:],num_sim_static_coords[2,:], all_grids, exp_data['exp_coordinates'][1], exp_data['exp_coordinates'][0], exp_data['exp_coordinates'][2], xhale_display )
 
 
 #------------Non-Uniform Beam Case -----------------#
 averaged_x, averaged_y, averaged_z = beamAverage(exp_data_beam['exp_coordinates'][0,:],exp_data_beam['exp_coordinates'][1,:],exp_data_beam['exp_coordinates'][2,:],0)
-temp_add_x = num_data_beam['num_coordinates_in_with_def'][0] - 1.83
-temp_add_z = num_data_beam['num_coordinates_in_with_def'][2] + 0.53285
+temp_add_x = num_data_beam['num_coordinates_in_with_def'][0] + beam_offset_x
+temp_add_z = num_data_beam['num_coordinates_in_with_def'][2] + beam_offset_z
 grids_matched_beam = []
-grids_matched_beam  = np.asarray(organizeGrids(num_data_beam['num_coordinates_in_with_def'][1],temp_add_x, temp_add_z ,num_data_beam['grids'][0], averaged_y, averaged_x ,averaged_z ))
+grids_matched_beam  = np.asarray(organizeGrids(num_data_beam['num_coordinates_in_with_def'][1],temp_add_x, temp_add_z ,num_data_beam['grids'][0], averaged_y, averaged_x ,averaged_z, full_mac_beam_display ))
+
+
+
+#-------Manual MAC Section-----------
+if manual_mac_display == True:
+    manual_Comp_Grid_mat = list()
+    x_coord_man = []
+    y_coord_man = []
+    z_coord_man = []
+    for man_index in range(len(num_sim_static_coords[0])):
+        manual_Comp_Grid_mat.append(compGrid(num_sim_static_coords[1,man_index],num_sim_static_coords[0,man_index], all_grids[man_index],num_sim_static_coords[2,man_index], None, None))
+    for man_index2 in range(len(manual_Comp_Grid_mat)):
+        if manual_Comp_Grid_mat[man_index2].g in grids_uni_le_te :
+            x_coord_man = np.append(x_coord_man,manual_Comp_Grid_mat[man_index2].x)
+            y_coord_man = np.append(y_coord_man,manual_Comp_Grid_mat[man_index2].y)
+            z_coord_man = np.append(z_coord_man,manual_Comp_Grid_mat[man_index2].z)
+
+    plotGraphs(exp_data['exp_coordinates'][0], exp_data['exp_coordinates'][1], exp_data['exp_coordinates'][2],x_coord_man,y_coord_man,z_coord_man, False) #blue is exp, red is num
 
 # ===================================================================================================================
 
@@ -432,7 +503,7 @@ for igloo2 in range(len(exp_modes_norm)):
         exp_modes_norm_vis[igloo2,jacob2,1] = exp_modes_norm[igloo2,jacob2,1] + exp_data['exp_coordinates'][1][igloo2] 
         exp_modes_norm_vis[igloo2,jacob2,2] = exp_modes_norm[igloo2,jacob2,2] + exp_data['exp_coordinates'][2][igloo2] 
 
-
+exp_modes_norm_vis_auto = exp_modes_norm_vis.copy() #for the auto sorted mac function
 #--------- Individual MAC Adding mode aplitude to EXPERIMENTAL u-shape coordinates for visualisation
 exp_modes_norm_self_vis = exp_modes_norm_self.copy()
 for igloo3 in range(len(exp_modes_norm_self)):
@@ -455,9 +526,9 @@ for juliet in range(len(exp_mode_beam)):
 num_mode_beam_vis = num_mode_beam.copy()
 for hector_v in range(len(num_mode_beam)):
     for hector2_v in range(len(num_mode_beam[0])):
-        num_mode_beam_vis[hector_v,hector2_v,0] = num_mode_beam[hector_v,hector2_v,0] - num_beam_coord_def[0,hector_v] - num_beam_coord[0,hector_v]
-        num_mode_beam_vis[hector_v,hector2_v,1] = num_mode_beam[hector_v,hector2_v,1] - num_beam_coord_def[1,hector_v] - num_beam_coord[1,hector_v]
-        num_mode_beam_vis[hector_v,hector2_v,2] = num_mode_beam[hector_v,hector2_v,2] - num_beam_coord_def[2,hector_v] - num_beam_coord[2,hector_v]
+        num_mode_beam_vis[hector_v,hector2_v,0] = num_mode_beam[hector_v,hector2_v,0] + (num_beam_coord_def[0,hector_v] - num_beam_coord[0,hector_v])
+        num_mode_beam_vis[hector_v,hector2_v,1] = num_mode_beam[hector_v,hector2_v,1] + (num_beam_coord_def[1,hector_v] - num_beam_coord[1,hector_v])
+        num_mode_beam_vis[hector_v,hector2_v,2] = num_mode_beam[hector_v,hector2_v,2] + (num_beam_coord_def[2,hector_v] - num_beam_coord[2,hector_v])
 
 
 
@@ -484,13 +555,25 @@ for kami_v in range(len(exp_mode_beam_vis[0])):
 #------- ----------XHALE Section Additional Processing: Add mode to beam coord data ---------- -------------------
 
 #/////////////Global XHALE Offsets: DO NOT TOUCH UNLESS EXPERIMENTAL SETUP CHANGES\\\\\\\\\\\\\\\\\\\\\\\\\
+#mac
 mode_shapes_reduced_total[:,:,0] = mode_shapes_reduced_total[:,:,0] + XHALE_offset_x
 mode_shapes_reduced_total[:,:,2] = mode_shapes_reduced_total[:,:,2] + XHALE_offset_z
+
+#vis as well
+mode_shapes_reduced_total_vis[:,:,0] = mode_shapes_reduced_total_vis[:,:,0] + XHALE_offset_x
+mode_shapes_reduced_total_vis[:,:,2] = mode_shapes_reduced_total_vis[:,:,2] + XHALE_offset_z
+
+
 #/////////////Global XHALE Offsets: DO NOT TOUCH UNLESS EXPERIMENTAL SETUP CHANGES\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-# add num normalization here 
+#mac: add num normalization here 
 mode_shapes_reduced_total = normalizeNumData(mode_shapes_reduced_total)
+
+#for visualisation as well
+mode_shapes_reduced_total_vis= normalizeNumData(mode_shapes_reduced_total_vis)
+
+
 
 
 #--------       ------------- Beam section Additional Processing: Add Mode to beam coord data-------------   ----------------
@@ -508,11 +591,20 @@ for hector in range(len(num_mode_beam)):
 # -----------Normalize beam numerical data-------------------
 
 #/////////////Global Beam Offsets: DO NOT TOUCH UNLESS EXPERIMENTAL SETUP CHANGES\\\\\\\\\\\\\\\\\\\\\\\\\
+#mac
 num_mode_beam[:,:,0] = num_mode_beam[:,:,0] + beam_offset_x 
 num_mode_beam[:,:,2] = num_mode_beam[:,:,2] + beam_offset_z
-#/////////////Global Beam Offsets: DO NOT TOUCH UNLESS EXPERIMENTAL SETUP CHANGES\\\\\\\\\\\\\\\\\\\\\\\\\
 
+#vis 
+num_mode_beam_vis[:,:,0] = num_mode_beam_vis[:,:,0] + beam_offset_x 
+num_mode_beam_vis[:,:,2] = num_mode_beam_vis[:,:,2] + beam_offset_z
+
+#/////////////Global Beam Offsets: DO NOT TOUCH UNLESS EXPERIMENTAL SETUP CHANGES\\\\\\\\\\\\\\\\\\\\\\\\\
+#mac
 num_mode_beam = normalizeNumData(num_mode_beam)
+
+#vis
+num_mode_beam_vis = normalizeNumData(num_mode_beam_vis)
 
 #===============================================end section=====================================================#
 
@@ -526,25 +618,36 @@ num_mode_beam = normalizeNumData(num_mode_beam)
 
 
 #----------------USE THIS EXTENSIVELY WITH EACH NEW DATA SET method to match Beam frequencies of num (coord+mode) and exp (coord+mode) data by hand --------------------------
-# temporary close
-# tri = 14  
-# trid = 13
-# plotGraphs(-exp_mode_beam[:,tri,0],exp_mode_beam[:,tri,1],exp_mode_beam[:,tri,2],[0],[0],[0])
-# # print('Current Exp Frequency is ' + str(exp_data_beam['exp_freq'][0,tri]) + ' Hz')
-# for fifa in range(trid,trid + 5): 
-#     matching_mods = plt.figure()
-#     ax4 = matching_mods.add_subplot(111, projection='3d')
-#     ax4.scatter(num_mode_beam[:,fifa,0],num_mode_beam[:,fifa,1],num_mode_beam[:,fifa,2], c='b', marker='o')
-#     plt.title('Num Frequency of ' + str(num_data_beam['num_freq'][0,fifa]) + ' Hz')
-#     ax4.set_xlabel('X Label')
-#     ax4.set_ylabel('Y Label')
-#     ax4.set_zlabel('Z Label')
-#     ax4.set_ylim([-2,2])
 
-#Uncomment this if you do not wish to see resulting data 
-# plt.close('all')
+if help_sort == True:     
+    exp_markers = [exp_modes_norm_vis,exp_modes_norm_vis,exp_modes_norm_vis, beam_exp_full_vis] #wish i can pass it by reference instead of making a huge matrix of data
+    num_markers = [mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,num_mode_beam_vis] 
+    bullseye = 5
+    for ricter in range(len(help_sort_this)):
+        if help_sort_this[ricter] == True :
+            bullseye = ricter
+    current_compare_exp = exp_markers[bullseye]
+    current_compare_num = num_markers[bullseye]
+    temp_with_lines = False
+    if bullseye == 3:
+        temp_with_lines = True
+    plotGraphs(current_compare_exp[:,exp_target_mode,0],current_compare_exp[:,exp_target_mode,1],current_compare_exp[:,exp_target_mode,2],[0],[0],[0], temp_with_lines)
+    plt.title('Current Exp Frequency Index of ' + str(exp_target_mode))
+    for fifa in range(num_mode_start,num_mode_start + 3): #cycles through next two num modes after num_mode_start and plots them
+        matching_mods = plt.figure()
+        ax4 = matching_mods.add_subplot(111, projection='3d')
+        ax4.scatter(current_compare_num[:,fifa,0],current_compare_num[:,fifa,1],current_compare_num[:,fifa,2], c='b', marker='o')
+        if temp_with_lines == True: 
+            ax4.plot(current_compare_num[:,fifa,0],current_compare_num[:,fifa,1],current_compare_num[:,fifa,2], c='b', marker='o')
+        plt.title('Num Frequency Index of ' + str(fifa))
+        ax4.set_xlabel('X Label')
+        ax4.set_ylabel('Y Label')
+        ax4.set_zlabel('Z Label')
+        ax4.set_ylim([-2,2])
+
+
+
 #========================================End of Visualizations===============================================================
-
 
 
 
@@ -600,12 +703,26 @@ for kami in range(len(exp_mode_beam[0])):
 
 
 # ------Manually sorted grids points------------
+#mac
 working_matrix = remove_Grid_Freq(all_grids, mode_shapes_reduced_total,freq_allowed, grids_uni_le_te )
+#vis
+working_matrix_vis = remove_Grid_Freq(all_grids, mode_shapes_reduced_total_vis,freq_allowed, grids_uni_le_te )
+
+
+#------Full Mac for XHALE---------------------
+#mac
+working_matrix_auto = remove_Grid_Freq(all_grids, mode_shapes_reduced_total,freq_allowed, grids_matched_def)
+
+#vis
+working_matrix_auto_vis = remove_Grid_Freq(all_grids, mode_shapes_reduced_total_vis,freq_allowed, grids_matched_def)
 
 
 #---------- Individual MAC for XHALE --------------------#
+#mac
 self_mac_rgf = remove_Grid_Freq( all_grids,mode_shapes_reduced_total,freq_allowed_self_v1 ,grids_matched_def )
 
+#vis
+self_mac_rgf_vis = remove_Grid_Freq( all_grids,mode_shapes_reduced_total_vis,freq_allowed_self_v1 , grids_matched_def)
 
 #----------Remove grid_freq for beam ------------------#
 
@@ -616,8 +733,8 @@ self_mac_rgf = remove_Grid_Freq( all_grids,mode_shapes_reduced_total,freq_allowe
 #full mac of non uniform beam
 beam_num_edited_full = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(num_data_beam['grids'][0]),1)),num_mode_beam, freq_allowed_beam_total , list(grids_matched_beam))
 
-
-
+#vis
+beam_num_edited_full_vis = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(num_data_beam['grids'][0]),1)),num_mode_beam_vis, freq_allowed_beam_total , list(grids_matched_beam))
 # =================================end section=========================================
  
 
@@ -689,6 +806,11 @@ def calculateMAC (phi_exp, phi_num, t_f_display):
     
     if t_f_display == True: 
         plotMAC(MAC_matrix)
+        # print("The MAC Matrix is: ")
+        # print(/n str(range(1,(len(MAC_matrix)))))
+        print("The following is the MAC Matrix")
+        print((MAC_matrix))
+
     return MAC_matrix
 
 
@@ -717,30 +839,48 @@ def singleMAC(phi_e, phi_n):
 
 
 
-# -------- Full MAC (not using automated grid sorting function)-------
 
-# for ua in range(len(exp_modes_norm[0])):
-#     plotGraphs(exp_modes_norm[:,ua,0],exp_modes_norm[:,ua,1],exp_modes_norm[:,ua,2], working_matrix[:,ua,0], working_matrix[:,ua,1], working_matrix[:,ua,2])
-
-
+exp_modes_norm_auto = exp_modes_norm.copy()
 
 #----------------Manually Sorted MAC----------------------
-#num
-if manual_mac_display == True: 
-    for ua0 in range(len(working_matrix)):
-        plotGraphs(exp_modes_norm_vis[:,ua0,0],exp_modes_norm_vis[:,ua0,1],exp_modes_norm_vis[:,ua0,2], working_matrix[:,ua0, 0],working_matrix[:,ua0, 1],working_matrix[:,ua0, 2])
+
+if manual_mac_display == True:
+    exp_modes_norm_vis = np.delete(exp_modes_norm_vis, deleted_exp_freq_manual, axis = 1)
+    for ua0 in range(len(working_matrix_vis[0])):
+        plotGraphs(exp_modes_norm_vis[:,ua0,0],exp_modes_norm_vis[:,ua0,1],exp_modes_norm_vis[:,ua0,2], working_matrix_vis[:,ua0, 0],working_matrix_vis[:,ua0, 1],working_matrix_vis[:,ua0, 2], False)
+        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,manual_good_exp_freq[ua0]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed[ua0]]))
 working_matrix = np.delete(working_matrix, [3,4,5], axis = 2)
 working_matrix = orderPhi(working_matrix, manual_good_exp_freq)
 
 #exp
-exp_modes_norm = np.delete(exp_modes_norm, deleted_exp_freq, axis = 1)
+exp_modes_norm = np.delete(exp_modes_norm, deleted_exp_freq_manual, axis = 1)
 exp_modes_norm = orderPhi(exp_modes_norm, freq_allowed)
 
 xhale_mac = calculateMAC(working_matrix, exp_modes_norm, manual_mac_display)
 
+# -------- Full XHALE MAC (using automated grid sorting function)-------
+if auto_mac_display == True:
+    exp_modes_norm_vis_auto = np.delete(exp_modes_norm_vis_auto, deleted_exp_freq_auto, axis = 1)
+    for ua in range(len(exp_modes_norm_vis_auto[0])):
+        plotGraphs(exp_modes_norm_vis_auto[:,ua,0],exp_modes_norm_vis_auto[:,ua,1],exp_modes_norm_vis_auto[:,ua,2], working_matrix_auto_vis[:,ua,0], working_matrix_auto_vis[:,ua,1], working_matrix_auto_vis[:,ua,2], False)
+        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,auto_good_exp_freq[ua]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_auto[ua]]))
 
+#num
+working_matrix_auto = np.delete(working_matrix_auto, [3,4,5], axis = 2)
+working_matrix_auto = orderPhi(working_matrix_auto, auto_good_exp_freq )
 
-#-------------Individual MAC for beam -------------------#
+#exp
+exp_modes_norm_auto = np.delete(exp_modes_norm_auto, deleted_exp_freq_auto, axis = 1)
+exp_modes_norm_auto = orderPhi(exp_modes_norm_auto, freq_allowed_auto)
+
+xhale_mac_auto = calculateMAC(working_matrix_auto, exp_modes_norm_auto, auto_mac_display)
+
+# put plots here 
+
+#-------------Individual MAC for XHale -------------------#
+
+if individual_mac_display == True:
+    plotGraphs(self_mac_rgf[:,0,0],self_mac_rgf[:,0,1],self_mac_rgf[:,0,2], exp_modes_norm_self[:,0,0],exp_modes_norm_self[:,0,1],exp_modes_norm_self[:,0,2], False)
 # num orderPhi
 self_mac_rgf = np.delete(self_mac_rgf, [3,4,5], axis = 2) #deletes rotational data (x rot,y rot,z rot)
 self_mac_phi = orderPhi(self_mac_rgf, freq_allowed_self_v1)
@@ -752,8 +892,8 @@ exp_modes_norm_mod = orderPhi(exp_modes_norm_self, individual_exp_freq)
 individual_mac = singleMAC(self_mac_phi, exp_modes_norm_mod)
 
 if individual_mac_display == True:
-    plotGraphs(self_mac_rgf[:,0,0],self_mac_rgf[:,0,1],self_mac_rgf[:,0,2], exp_modes_norm_self[:,0,0],exp_modes_norm_self[:,0,1],exp_modes_norm_self[:,0,2])
     print('Indivdual MAC of Exp Indicy ' + str(freq_allowed_self_v1) + ' and Exp Indicy ' + str(individual_exp_freq) + ': ' + str(individual_mac))
+
 
 #-------------Individual MAC for beam -------------------#
 # ind_beam_num = orderPhi(beam_edited, [7]) # @3.28 hz 
@@ -764,228 +904,59 @@ if individual_mac_display == True:
 
 #------------------Full Mac for beam-------------------------#
 
+if full_mac_beam_display == True: #displays mode data if user wants it to appear, also shows mac 3d bar chart
+    beam_exp_full_vis = np.delete(beam_exp_full_vis, deleted_exp_beam_total, axis = 1)
+ 
+    for ua2 in range(len(beam_exp_full_vis[0])):
+        plotGraphs(beam_exp_full_vis[:,ua2,0],beam_exp_full_vis[:,ua2,1],beam_exp_full_vis[:,ua2,2], beam_num_edited_full_vis[:,ua2,0],beam_num_edited_full_vis[:,ua2,1], beam_num_edited_full_vis[:,ua2,2], True)
+        plt.title("Modal Comparison of Beam Exp Frequency: " + str(exp_data_beam['exp_freq'][0,good_exp_beam_data[ua2]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_beam_total[ua2]]))
+
+
 # exp phi beam
 beam_exp_full = np.delete(beam_exp_full, deleted_exp_beam_total, axis = 1 ) #deletes the extra experimental modes
 beam_exp_full = orderPhi(beam_exp_full, good_exp_beam_data)
 #numerical phi beam
 beam_num_edited_full  = orderPhi(beam_num_edited_full, freq_allowed_beam_total)
-beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full, beam_mac_display)
+beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full, full_mac_beam_display)
 
-if full_mac_beam_display == True: #displays mode data if user wants it to appear, also shows mac 3d bar chart
-    for ua2 in range(len(beam_exp_full[0])):
-        plotGraphs(beam_exp_full_vis[:,ua2,0],beam_exp_full_vis[:,ua2,1],beam_exp_full_vis[:,ua2,2], num_mode_beam_vis[:,ua2,0],num_mode_beam_vis[:,ua2,1], num_mode_beam_vis[:,ua2,2])
-# calculate the mac of the beam 
-beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full, beam_mac_display)
+# ====================Appendix ===========================================
 
-
-
-# check_MAC_large = calculateMAC(beam_exp_full, beam_num_edited_full)
-
-# Normalization at line 504
-
-    # ------Temporary use of singleMac function-----
-
-
-#-------------------------------------------------------------#
-# ============================== end orderPhi section ==========================================
-
-
-#-------Call calculateMAC function --------#
-#DUMMY MAC
-# dummy_matrix = np.random.randint(10,size = (15,7))
-# test_v1 = calculateMAC(dummy_matrix, dummy_matrix)
-
-
-# #Total MAC Test
-# test_v2 = calculateMAC(np.transpose(working_matrix),np.transpose(working_matrix))
-# # test_v2 = calculateMAC(np.transpose(exp_modes_norm),np.transpose(working_matrix))
-# #Note that exp_modes_norm needs to be adjusted to delete certain experimental freq
-
-# #Individual MAC mode 1
-# exp_modes_norm_mod = np.reshape(exp_modes_norm_mod, (1,len(exp_modes_norm_mod)))
-# self_mac_phi = np.reshape(exp_modes_norm_mod, (1,len(self_mac_phi)))
-
-# test_v3 = calculateMAC(np.transpose(exp_modes_norm_mod),np.transpose(self_mac_phi)) #test with different mode or with opposite modes+
-
-
-#!!!!!!!!!!! reminder plot matched grid indicies as proof
-#------End Call calculateMAC function ------#
-
-
-#----------------Beam section MAC Functions ---------------
-
-
-
-#####################Torrence Notes######################
-
-
-# Newest notes: 
-    # as long as you find the abs value you should be able to retain the shape 
-
-# read plot 
-# remove the abs value (put thought into this)
-# for i in range(len(mode_shapes_normalized)):
-#         mode_shapes_normalized[:][:][i] = np.divide(mode_shapes_normalized[:][:][i]\
-#         ,np.max(np.max(np.abs(mode_shapes_normalized[:][:][i]))))
-
-
-# first value of mac is falsely inflated somehow. za1 is higher than it should be
-
-
-
-
-
-
-
-######################Bilal Notes############################
-#run this with beam test data to ensure that it is as generalized a possible (non linear beam test files)
-#look into TOR and XOR test methods from NASATRAN 
-#you can manipulate data from nastran output (from bdf input file)
-#use experimental analytical mass matrix 
-
-#given a model and given a mass matrix how to do you peform TOR and XOR. Look into NASA and other papers 
-    # bilal wants a suite and we can run it based on user desired tests 
-    #tell bilal if he is missing anything !!!!!!!!!!
-        #will probably need to have more info for tor and xor comparison matrix 
-
-
-#compare only the z components (third component)
-
-#function to compare experimental frequencies with numerical frequencies
-
-################################################################
-
-
-
-# ========================Unused CODE SECTION ======================================#
-#------- PSEUDOCODE-----
-    #create frequency matrix
-    #for going through length of vector experimental 
-        #for loop going through vector numerical 
-            #version 1  = abs(numerical value - experimental value)/experimental
-            #if index + 1 exist,
-                #version 2 = abs((numerical value + 1 in index)  - experimental value)/experimental
-                #else version 2 = 1;
-            #if version1 is smaller than version 2 and within a 50% tolerance (I'm trying to prevent super small data)
-                #append the index value to frequency array
-                #else if version 2 < version 1
-                    #exit loop this inner loop
-#--------End of PSEUDOCODE---------
-
-
-#def sortFrequencies (numericalData, experimentalData):
-#experimentalData = exp_data['exp_freq']
-                            # numericalData = num_data['freq_NASTRAN_out']
-                            # numericalData = np.delete(numericalData,[0,1,2],1)
-                            # freqIndicies = []
-                            # for exp in range(len(experimentalData[0])):
-                            #     for num in range(len(numericalData[0])):
-                            #         version1 = (abs(numericalData[0][num] - experimentalData[0][exp]))/(experimentalData[0][exp])
-                            #         if (num+1) < len(numericalData[0]):
-                            #             version2 = (abs(numericalData[0][num+1] - experimentalData[0][exp])/(experimentalData[0][exp]))
-                            #         else:
-                            #             version2 = 3
-                            #         if (version1 < version2) and (version1 < 0.25): #version less than 25%
-                            #             freqIndicies.append(num)
-                            #             break
-#    return freqIndicies
-#might try using three check version, the problem with this one is that if the 2nd entry after the search point is larger, then the code will not work  
-
-# for kami_sec in range(len(beam_exp_full[0])): # You have to make sure that number of numerical frequencies and number of experimental frequencies match
-#     beam_exp_full[:,kami_sec,2] = beam_exp_full[:,kami_sec,2]*exception_flip_z[kami_sec] + 0.67 #see how this alters code
-#     #grad3D would have been called here  #The beam offset (above would have made it easier to compare the num and exp after being flipped, Bilal and I determined it should no longer be applied because it would throw off the MAC calculations)
-# # print(beam_exp_full[:,1,2])
-
-
-
-#grad3D was supposed to be called to correct mode shapes flipped over the x axis, but turned out to not be useful because it could not be applied uniformly to all modes
-# def grad3D (num_x, num_y, num_z,exp_x,exp_y,exp_z):
-
-#     abs_exp_z = []
-#     abs_num_z = []
-#     for trudy in range(len(exp_z)):
-#         abs_exp_z = np.append(abs_exp_z,abs(exp_z[trudy]))
+#     Locations (aka Variables) of MAC Matricies: 
+#         Manual Full XHALE: xhale_mac
+#         Auto Full XHALE: xhale_mac_auto
+#         Individual XHALE: individual_mac
+#         Full Beam: beam_MAC
     
-#     for trudy2 in range(len(num_z)):
-#         abs_num_z = np.append(abs_num_z,abs(num_z[trudy2]))
+#     Please Mirror All .mat files accordingly 
     
-#     cond_1 = np.where(abs_exp_z > 0, abs_exp_z, np.inf).argmax() #finds the maximum possible value (even if negative and returns index)
-#     cond_2 = np.where(abs_num_z > 0, abs_num_z, np.inf).argmax()
-#     # take both max negative and max positve, compare absolute value
-#     if exp_z[cond_1] < 0 and num_z[cond_2] > 0:
-#         for tamper1 in range(len(exp_z)):
-#             exp_z[tamper1] = -1*exp_z[tamper1]    
+#     Xhale
+#         Numerical Data: 
+#             freq_NASTRAN_out: stores simulated num frequencies from nastran modes [1 x frequency numbers]
+#             grids: stores position coordinates of each accelerometer point [1 x grid numbers]
+#             num_coordinates: simulation coordinates [dim x grid numbers] (no deformation)
+#             num_coordinates_in_with_def: stores sum of numerical points + static deformation at respective point
+#             num_mode_shapes: (from nastran) stores mode shape in first array [freq x accel (trans + rot) x grids] (Note: Data not normalized) and static deformation in the second array [ accel (trans + rot) x grids] 
+        
+#         Experimental Data: 
+#             exp_coordinates: exp coordinates + static deformation [dim x grid numbers] 
+#             exp_damp: damping coefficients (not used)
+#             exp_freq: stores exp frequencies from conducted experiment [1 x frequency numbers]
+#             exp_mode_shapes_normalized: stores exp mode shapes [freq x accel (trans + rot) x grids] (normalized from 0 to 1) 
     
-#     if exp_z[cond_1] > 0 and num_z[cond_2] < 0:
-#         for tamper2 in range(len(exp_z)):
-#             exp_z[tamper2] = -1*exp_z[tamper2]
-    
-
-#     plotGraphs(exp_x,exp_y,exp_z,num_x,num_y,num_z)
-#     return exp_x, exp_y, exp_z
-
-
-#===================================================Bilal Prior Code======================================#
- # ------Bilal hard coded the grids in this section to reflect the grids points used in experiment (try to code this differently) /T
-                #num_file = 'beam_num_data_out.mat'
-                #exp_file = 'beam_exp_data.mat'
-                
-                # function to take selected node displacements in numerical eigenvectors
-                # These nodes are selected by the user to match accel locations 
-                #def reduced_mode_shapes(u_unsorted, grids, grids_order):
-                #
-                #    # this function sorts a displacement field according
-                #    # to a user-specified grid order
-                #    # this function can be also used to extract a set of
-                #    # ids from the total imported displacement field 
-                #
-                #    # allocation
-                #    u_reduced = ([np.zeros([6,len(grids_order)],dtype=np.float64) \
-                #                           for i in range(len(grids_order))]) 
-                #
-                #    # loop over the number of fields (e.g. mode shapes)
-                #    for j in range(len(u_unsorted)):
-                #        # loop over the grid ids in the desired order
-                #        for i, grid in enumerate(grids_order):
-                #            
-                #            # finding position of current grid
-                #            index = int(np.where(grids == int(grid))[0])
-                #            
-                #            # saving displacements
-                #            u_reduced[j][:,i] = u_unsorted[j][:,index]
-                #            
-                #    return u_reduced
-                #
-                ## sort mode shapes according to sensor data order in unv file
-                #mode_shapes_reduced = reduced_mode_shapes(num_data['num_mode_shapes'], \
-                #                     num_data['grids'], grids_uni_le_te)
-                
-                #u_reduced = ([np.zeros([6,len(grids_uni_le_te)],dtype=np.single) \
-                #                           for i in range(len(num_data['num_mode_shapes']))]) 
-                #index = int(np.where(num_data['grids'] == int(grid))[0])
-                
-                # delete any node locations that do not correspond to sensor data
-                
-                #------End of Hardcoded Bilal Section --------#
-                
-
-                #----Bilal Section -----#
-                #mode_appended = []
-                # for freq2 in range(0,25):
-                #    for freq2 in range(0,6):
-                #        mode_appended = num_data['num_mode_shapes'][0][0]
-                
-                
-                #         -----set aside point to make add the two arrays together to avoid reference issues later /T
-                # len(num_data['num_mode_shapes']) = 1
-                #grids_uni_le_te.astype(int)
-                #num_data['grids'].astype(int)
-                
-                # have not modified anything after this
-                  #  mode_test = np.delete(mode_shapes_reduced_total[mode][dof], np.asarray(int_2_remove))  
-                  
-                #-------------End of Bilal Section-------------------- #
-
-
-
-
+#     Beam
+#         Numerical Data
+#             grids: stores position coordinates of each accelerometer point [1 x grid numbers]
+#             num_coordinates: simulation coordinates [dim x grid numbers] (no deformation)
+#             num_coordinates_in_with_def: simulation coordinates + static deformation [dim x grid numbers] 
+#             num_freq: stores simulated num frequencies from nastran modes [1 x frequencies]
+#             num_mode_shapes: (from nastran) stores mode shape in first array [freq x accel (trans + rot) x grids] (Note: data not normalized)
+#             sum_modal_def: sum of modal shape + static deformation + simulated coordinates
+        
+#         Experimental Data: 
+#             exp_coordinates: exp coordinates + static deformation [dim x grid numbers] 
+#             exp_damp: damping coefficients (not used)
+#             exp_freq: stores exp frequencies from conducted experiment [1 x frequency numbers]
+#             exp_mode_shapes_normalized: stores exp mode shapes [freq x accel (trans + rot) x grids] (normalized from 0 to 1) 
+        
+        
+        
