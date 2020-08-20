@@ -5,6 +5,7 @@
 # XHALE and Beam MAC Analysis Script (User Friendly Version)
 
 import numpy as np
+import math
 import os
 import pyuff
 import scipy.io as sio
@@ -16,7 +17,6 @@ from matplotlib import style
 style.use('ggplot')
 
 plt.close("all")
-
 
 
 # User please edit from Step 0 through Step 3 to complete MAC analysis:
@@ -75,7 +75,7 @@ exp_data_beam = sio.loadmat(exp_file_beam)
 manual_mac_display = False
 auto_mac_display = False 
 individual_mac_display = False
-full_mac_beam_display = False 
+full_mac_beam_display = True 
 
 help_sort = False
 exp_target_mode = 1     #Enter the experimental mode you want to match here
@@ -148,6 +148,7 @@ good_exp_beam_data = [1,2,4,7,8,14]
 
 temp_range_vec = range(0,len(exp_data_beam['exp_freq'][0]))
 deleted_exp_beam_total = np.delete(temp_range_vec,good_exp_beam_data)
+full_length = 0.0508 #enter in chord length of beam
 
 
 
@@ -170,9 +171,9 @@ beam_offset_z = 0.532887
 
 #--------  Read In/ Transposing XHALE Num Data-------------
 #import numerical and experimental data
-mode_shapes_reduced_total = num_data['num_mode_shapes'][0][0]
-all_grids = num_data['grids'][0]
-exp_modes_norm = exp_data['exp_mode_shapes_normalized']
+mode_shapes_reduced_total = num_data['num_mode_shapes'][0][0].copy()
+all_grids = num_data['grids'][0].copy()
+exp_modes_norm = exp_data['exp_mode_shapes_normalized'].copy()
 
 
 #note also had to transpose the non-deformed state as well deformed state and experimental data
@@ -189,19 +190,24 @@ exp_modes_norm_self = exp_modes_norm.copy()
 
 
 #-------Read in/ Transposing Non-Uniform Beam Data------------------------------------------------- 
-exp_mode_beam = exp_data_beam['exp_mode_shapes_normalized']
-exp_beam_coord = exp_data_beam['exp_coordinates']
+exp_mode_beam = exp_data_beam['exp_mode_shapes_normalized'].copy()
+exp_beam_coord = exp_data_beam['exp_coordinates'].copy()
 exp_mode_beam = exp_mode_beam.transpose((2,0,1))
 
-#num_mode_beam = num_data_beam['num_mode_shapes']
-num_beam_coord_def = num_data_beam['num_coordinates_in_with_def']
-num_mode_beam = num_data_beam['sum_modal_def']
-num_beam_coord = num_data_beam['num_coordinates']  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Cancel the mode transpose
+num_mode_beam = num_data_beam['num_mode_shapes'].copy()
+num_beam_coord_def = num_data_beam['num_coordinates_in_with_def'].copy()
+num_mode_beam1 = num_data_beam['sum_modal_def'].copy()
+num_beam_coord = num_data_beam['num_coordinates'].copy()  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Cancel the mode transpose
  
 num_mode_beam = num_mode_beam.transpose((2,0,1))
-# =====================================================================================================================
-                     
-                     
+num_mode_beam1 = num_mode_beam1.transpose((2,0,1))
+
+# =====================================================================================================================\
+
+# for phi in range(len(num_mode_beam)): 
+#     num_mode_beam[phi,:,0] = num_mode_beam[phi,:,0] + num_data_beam['num_coordinates'][0,phi]
+#     num_mode_beam[phi,:,1] = num_mode_beam[phi,:,1] + num_data_beam['num_coordinates'][1,phi]
+#     num_mode_beam[phi,:,2] = num_mode_beam[phi,:,2] + num_data_beam['num_coordinates'][2,phi] 
 
 
 # Pseudo code compGrid
@@ -523,22 +529,27 @@ for juliet in range(len(exp_mode_beam)):
         exp_mode_beam_vis[juliet,kilo,2] = exp_mode_beam[juliet,kilo,2] + exp_beam_coord[2,juliet]
 
 
-num_mode_beam_vis = num_mode_beam.copy()
-for hector_v in range(len(num_mode_beam)):
-    for hector2_v in range(len(num_mode_beam[0])):
-        num_mode_beam_vis[hector_v,hector2_v,0] = num_mode_beam[hector_v,hector2_v,0] + (num_beam_coord_def[0,hector_v] - num_beam_coord[0,hector_v])
-        num_mode_beam_vis[hector_v,hector2_v,1] = num_mode_beam[hector_v,hector2_v,1] + (num_beam_coord_def[1,hector_v] - num_beam_coord[1,hector_v])
-        num_mode_beam_vis[hector_v,hector2_v,2] = num_mode_beam[hector_v,hector2_v,2] + (num_beam_coord_def[2,hector_v] - num_beam_coord[2,hector_v])
+num_mode_beam_vis_e = num_mode_beam1.copy()
+for hector2_v in range(len(num_mode_beam[0])):
+    for hector_v in range(len(num_mode_beam)):
+        num_mode_beam_vis_e[hector_v,hector2_v,0] = num_mode_beam1[hector_v,hector2_v,0] + (-num_beam_coord_def[0,hector_v] + num_beam_coord[0,hector_v]) #have to eliminate static def that was added to mode data during import
+        num_mode_beam_vis_e[hector_v,hector2_v,1] = num_mode_beam1[hector_v,hector2_v,1] + (-num_beam_coord_def[1,hector_v] + num_beam_coord[1,hector_v])
+        num_mode_beam_vis_e[hector_v,hector2_v,2] = num_mode_beam1[hector_v,hector2_v,2] + (-num_beam_coord_def[2,hector_v] + num_beam_coord[2,hector_v])
+store_copy = np.zeros(np.shape(num_mode_beam))
+store_copy[:,:,3:6] = num_mode_beam[:,:,3:6].copy()
+store_copy[:,:,0:3] = num_mode_beam_vis_e[:,:,:]
+num_mode_beam_vis = store_copy
 
 
-
-#Averaging experimental data: 
-    beam_exp_full_vis = np.zeros((int(len(exp_mode_beam_vis)/2),len(exp_mode_beam_vis[0]),len(exp_mode_beam_vis[0,0])))
-for kami_v in range(len(exp_mode_beam_vis[0])): 
-    temp_av_x_v, temp_av_y_v, temp_av_z_v = beamAverage(exp_mode_beam_vis[:,kami_v,0],exp_mode_beam_vis[:,kami_v,1],exp_mode_beam_vis[:,kami_v,2], 0)
-    beam_exp_full_vis[:,kami_v,0] = temp_av_x_v
-    beam_exp_full_vis[:,kami_v,1] = temp_av_y_v
-    beam_exp_full_vis[:,kami_v,2] = temp_av_z_v
+# #Averaging experimental data: 
+#     beam_exp_full_vis = np.zeros((int(len(exp_mode_beam_vis)/2),len(exp_mode_beam_vis[0]),len(exp_mode_beam_vis[0,0])))
+# for kami_v in range(len(exp_mode_beam_vis[0])): 
+#     temp_av_x_v, temp_av_y_v, temp_av_z_v = beamAverage(exp_mode_beam_vis[:,kami_v,0],exp_mode_beam_vis[:,kami_v,1],exp_mode_beam_vis[:,kami_v,2], 0)
+#     beam_exp_full_vis[:,kami_v,0] = temp_av_x_v
+#     beam_exp_full_vis[:,kami_v,1] = temp_av_y_v
+#     beam_exp_full_vis[:,kami_v,2] = temp_av_z_v
+    
+beam_exp_full_vis = exp_mode_beam_vis.copy()
 # =============================================================================================================
 
 
@@ -609,7 +620,7 @@ num_mode_beam_vis = normalizeNumData(num_mode_beam_vis)
 #===============================================end section=====================================================#
 
 
-
+print(1)
 
 
 # =====================Visualization Secton for global translations and Rotations of Data==========================
@@ -622,24 +633,31 @@ num_mode_beam_vis = normalizeNumData(num_mode_beam_vis)
 if help_sort == True:     
     exp_markers = [exp_modes_norm_vis,exp_modes_norm_vis,exp_modes_norm_vis, beam_exp_full_vis] #wish i can pass it by reference instead of making a huge matrix of data
     num_markers = [mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,num_mode_beam_vis] 
+   
+    
+   #exp_target_mode
+    freq_markers_exp = [exp_data['exp_freq'][0],exp_data['exp_freq'][0],exp_data['exp_freq'][0],exp_data_beam['exp_freq'][0]]
+    freq_markers_num = [num_data['freq_NASTRAN_out'][0],num_data['freq_NASTRAN_out'][0],num_data['freq_NASTRAN_out'][0],num_data_beam['num_freq'][0]]
     bullseye = 5
     for ricter in range(len(help_sort_this)):
         if help_sort_this[ricter] == True :
             bullseye = ricter
     current_compare_exp = exp_markers[bullseye]
+    current_freq_exp = freq_markers_exp[bullseye]
     current_compare_num = num_markers[bullseye]
+    current_freq_num = freq_markers_num[bullseye]
     temp_with_lines = False
     if bullseye == 3:
         temp_with_lines = True
     plotGraphs(current_compare_exp[:,exp_target_mode,0],current_compare_exp[:,exp_target_mode,1],current_compare_exp[:,exp_target_mode,2],[0],[0],[0], temp_with_lines)
-    plt.title('Current Exp Frequency Index of ' + str(exp_target_mode))
+    plt.title('Current Exp Frequency Index of ' + str(exp_target_mode) + ' at freq: ' + str(current_freq_exp[exp_target_mode]) + ' Hz')
     for fifa in range(num_mode_start,num_mode_start + 3): #cycles through next two num modes after num_mode_start and plots them
         matching_mods = plt.figure()
         ax4 = matching_mods.add_subplot(111, projection='3d')
         ax4.scatter(current_compare_num[:,fifa,0],current_compare_num[:,fifa,1],current_compare_num[:,fifa,2], c='b', marker='o')
         if temp_with_lines == True: 
             ax4.plot(current_compare_num[:,fifa,0],current_compare_num[:,fifa,1],current_compare_num[:,fifa,2], c='b', marker='o')
-        plt.title('Num Frequency Index of ' + str(fifa))
+        plt.title('Num Frequency Index of ' + str(fifa) + ' at freq: ' + str(current_freq_num[fifa]) + ' Hz')
         ax4.set_xlabel('X Label')
         ax4.set_ylabel('Y Label')
         ax4.set_zlabel('Z Label')
@@ -685,12 +703,13 @@ def remove_Grid_Freq (total_grids, mode_shapes_reduced_dummy, freq_we_want, grid
 # ========================================Beam ONLY Experimental data (coord+mode) Processing (Averaging and rotation of exp modes)===================
 
 
-beam_exp_full = np.zeros((int(len(exp_mode_beam)/2),len(exp_mode_beam[0]),len(exp_mode_beam[0,0])))
-for kami in range(len(exp_mode_beam[0])): 
-    temp_av_x, temp_av_y, temp_av_z = beamAverage(exp_mode_beam[:,kami,0],exp_mode_beam[:,kami,1],exp_mode_beam[:,kami,2], 0)
-    beam_exp_full[:,kami,0] = temp_av_x 
-    beam_exp_full[:,kami,1] = temp_av_y 
-    beam_exp_full[:,kami,2] = temp_av_z 
+# beam_exp_full = np.zeros((int(len(exp_mode_beam)/2),len(exp_mode_beam[0]),len(exp_mode_beam[0,0])))
+# for kami in range(len(exp_mode_beam[0])): 
+#     temp_av_x, temp_av_y, temp_av_z = beamAverage(exp_mode_beam[:,kami,0],exp_mode_beam[:,kami,1],exp_mode_beam[:,kami,2], 0)
+#     beam_exp_full[:,kami,0] = temp_av_x 
+#     beam_exp_full[:,kami,1] = temp_av_y 
+#     beam_exp_full[:,kami,2] = temp_av_z 
+beam_exp_full = exp_mode_beam.copy()
 
 
 
@@ -737,7 +756,6 @@ beam_num_edited_full = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(n
 beam_num_edited_full_vis = remove_Grid_Freq(np.reshape(num_data_beam['grids'],(len(num_data_beam['grids'][0]),1)),num_mode_beam_vis, freq_allowed_beam_total , list(grids_matched_beam))
 # =================================end section=========================================
  
-
 
 
 #==============Additional Visualisation to check if grad3D worked=======================
@@ -827,17 +845,65 @@ def singleMAC(phi_e, phi_n):
     n3 = np.matmul(np.transpose(phi_e), phi_e)
     MAC_n = n1/(n2*n3)
     return MAC_n 
-                
+     
 
 
-#==========================================Call orderPhi function============================#
 
+
+# !!!!!!!!!!!!!!!!!!!!!!!! Need to determine between visual representation and modal version 
+def calcDisp(num_mode_matrix, half_length):
+    z_store = np.zeros((len(num_mode_matrix),len(num_mode_matrix[0]), 1))
+    z_store1 = np.zeros((len(num_mode_matrix),len(num_mode_matrix[0]), 1))
+
+    for freq_iter in range(len(num_mode_matrix[0])): #iterates through each frquency 
+        for grid_iter in range(len(num_mode_matrix)): #iterates through the rotation of each grid
+            temp_x_rot = num_mode_matrix[grid_iter,freq_iter,3]
+            # print(str(math.sin(temp_x_rot)*half_length))
+            z_store[grid_iter,freq_iter,0] = math.sin(temp_x_rot)*half_length + num_mode_matrix[grid_iter,freq_iter,2] #right side of beam chord (facing y-z plane facing negative x direction) + current z disp   (associated with postive y- coordinate section )
+            z_store1[grid_iter,freq_iter,0] = -math.sin(temp_x_rot)*half_length + num_mode_matrix[grid_iter,freq_iter,2] #left side of beam chord + current z disp   (associated with negative y- coordinate section )
+
+    num_mode_matrix_copy = num_mode_matrix.copy()
+    
+    num_mode_matrix = np.delete(num_mode_matrix, [2,3,4,5], axis = 2) #delete z-axis components 
+    num_mode_matrix_copy = np.delete(num_mode_matrix_copy, [2,3,4,5], axis = 2) #delete z-axis components 
+
+    num_mode_matrix = np.append(num_mode_matrix, z_store, axis = 2)  #for positive section 
+    num_mode_matrix_copy = np.append(num_mode_matrix_copy, z_store1, axis = 2) # for negative section     this is to offset problem of grids being sorted by +,- y for experimental data set (the numerical data set needs to match this as well) (data is organized by + , - , + , - so this would create errors)
+    
+    
+    #add the half length to the y coordinate
+    num_mode_matrix[:,:,1] = num_mode_matrix[:,:,1] + half_length #positive y 
+    num_mode_matrix_copy[:,:,1] = num_mode_matrix_copy[:,:,1] - half_length #negative y 
+
+        
+    
+    # np.insert(num_mode_matrix,num_mode_matrix[14,0,:], num_mode_matrix_copy[14, 0, :], axis = 2)
+    storage_matrix  = np.zeros((len(num_mode_matrix)*2,len(num_mode_matrix[0]),len(num_mode_matrix[0,0])))
+    #storage_matrix_vis  = storage_matrix.copy()
+
+    for st_iter in range(len(storage_matrix[0])): 
+        for st_iter2 in range(len(num_mode_matrix)):
+            storage_matrix[st_iter2*2,st_iter,:] = num_mode_matrix[st_iter2,st_iter,:]
+            storage_matrix[st_iter2*2 + 1,st_iter,:] = num_mode_matrix_copy[st_iter2,st_iter,:]
+            
+            #storage_matrix_vis[st_iter2*2,st_iter,:] = num_mode_matrix[st_iter2,st_iter,:] + grid_coords_vis[st_iter2,:]
+            #storage_matrix_vis[st_iter2*2 + 1,st_iter,:] = num_mode_matrix_copy[st_iter2,st_iter,:] + grid_coords_vis[st_iter2,:]
+
+
+
+
+    return storage_matrix #, storage_matrix_vis
+
+# a = np.random.randint(10,size = (15,3,6))
+# a2 = np.random.randint(10,size = (15,3))
+# a, vis = calcDisp(a,a2 , 0.5)
+        
+# alphaecho, alphabravo = calcDisp()       
+
+
+#==========================================Call orderPhi function and calculateMAC functiom============================#
 
 #Note First set is blue, second is red 
-
-
-
-
 
 
 exp_modes_norm_auto = exp_modes_norm.copy()
@@ -848,7 +914,7 @@ if manual_mac_display == True:
     exp_modes_norm_vis = np.delete(exp_modes_norm_vis, deleted_exp_freq_manual, axis = 1)
     for ua0 in range(len(working_matrix_vis[0])):
         plotGraphs(exp_modes_norm_vis[:,ua0,0],exp_modes_norm_vis[:,ua0,1],exp_modes_norm_vis[:,ua0,2], working_matrix_vis[:,ua0, 0],working_matrix_vis[:,ua0, 1],working_matrix_vis[:,ua0, 2], False)
-        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,manual_good_exp_freq[ua0]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed[ua0]]))
+        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,manual_good_exp_freq[ua0]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed[ua0]]) + " NAS = red, Exp. = blue")
 working_matrix = np.delete(working_matrix, [3,4,5], axis = 2)
 working_matrix = orderPhi(working_matrix, manual_good_exp_freq)
 
@@ -863,7 +929,7 @@ if auto_mac_display == True:
     exp_modes_norm_vis_auto = np.delete(exp_modes_norm_vis_auto, deleted_exp_freq_auto, axis = 1)
     for ua in range(len(exp_modes_norm_vis_auto[0])):
         plotGraphs(exp_modes_norm_vis_auto[:,ua,0],exp_modes_norm_vis_auto[:,ua,1],exp_modes_norm_vis_auto[:,ua,2], working_matrix_auto_vis[:,ua,0], working_matrix_auto_vis[:,ua,1], working_matrix_auto_vis[:,ua,2], False)
-        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,auto_good_exp_freq[ua]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_auto[ua]]))
+        plt.title("Modal Comparison of XHALE Exp Frequency: " + str(exp_data['exp_freq'][0,auto_good_exp_freq[ua]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_auto[ua]])+ " NAS = red, Exp. = blue")
 
 #num
 working_matrix_auto = np.delete(working_matrix_auto, [3,4,5], axis = 2)
@@ -878,9 +944,10 @@ xhale_mac_auto = calculateMAC(working_matrix_auto, exp_modes_norm_auto, auto_mac
 # put plots here 
 
 #-------------Individual MAC for XHale -------------------#
-
+#mode_shapes_reduced_total_vis
 if individual_mac_display == True:
-    plotGraphs(self_mac_rgf[:,0,0],self_mac_rgf[:,0,1],self_mac_rgf[:,0,2], exp_modes_norm_self[:,0,0],exp_modes_norm_self[:,0,1],exp_modes_norm_self[:,0,2], False)
+    plotGraphs(exp_modes_norm_self_vis[:,0,0],exp_modes_norm_self_vis[:,0,1],exp_modes_norm_self_vis[:,0,2],self_mac_rgf_vis[:,0,0],self_mac_rgf_vis[:,0,1],self_mac_rgf_vis[:,0,2], False)
+    plt.title( 'Modal Comparison of XHALE Exp Freq ' + str(exp_data['exp_freq'][0,individual_exp_freq[0]]) + ' Hz and Num Freq ' + str(num_data['freq_NASTRAN_out'][0,freq_allowed_self_v1[0]])  + ' Hz, NAS = red, Exp. = blue')
 # num orderPhi
 self_mac_rgf = np.delete(self_mac_rgf, [3,4,5], axis = 2) #deletes rotational data (x rot,y rot,z rot)
 self_mac_phi = orderPhi(self_mac_rgf, freq_allowed_self_v1)
@@ -892,13 +959,7 @@ exp_modes_norm_mod = orderPhi(exp_modes_norm_self, individual_exp_freq)
 individual_mac = singleMAC(self_mac_phi, exp_modes_norm_mod)
 
 if individual_mac_display == True:
-    print('Indivdual MAC of Exp Indicy ' + str(freq_allowed_self_v1) + ' and Exp Indicy ' + str(individual_exp_freq) + ': ' + str(individual_mac))
-
-
-#-------------Individual MAC for beam -------------------#
-# ind_beam_num = orderPhi(beam_edited, [7]) # @3.28 hz 
-# mac_number = singleMAC(za1, ind_beam_num)
-# # print(mac_number)
+    print('Indivdual MAC of Exp Freq ' + str(exp_data['exp_freq'][0,individual_exp_freq[0]]) + ' Hz and Num Freq ' + str(num_data['freq_NASTRAN_out'][0,freq_allowed_self_v1[0]])  + ' Hz: ' + str(individual_mac[0]))
 
 
 
@@ -906,18 +967,22 @@ if individual_mac_display == True:
 
 if full_mac_beam_display == True: #displays mode data if user wants it to appear, also shows mac 3d bar chart
     beam_exp_full_vis = np.delete(beam_exp_full_vis, deleted_exp_beam_total, axis = 1)
- 
+
     for ua2 in range(len(beam_exp_full_vis[0])):
-        plotGraphs(beam_exp_full_vis[:,ua2,0],beam_exp_full_vis[:,ua2,1],beam_exp_full_vis[:,ua2,2], beam_num_edited_full_vis[:,ua2,0],beam_num_edited_full_vis[:,ua2,1], beam_num_edited_full_vis[:,ua2,2], True)
-        plt.title("Modal Comparison of Beam Exp Frequency: " + str(exp_data_beam['exp_freq'][0,good_exp_beam_data[ua2]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_beam_total[ua2]]))
+        beam_num_edited_full_vis2 = calcDisp(beam_num_edited_full_vis,full_length/2.0 )
+        plotGraphs(beam_exp_full_vis[:,ua2,0],beam_exp_full_vis[:,ua2,1],beam_exp_full_vis[:,ua2,2], beam_num_edited_full_vis2[:,ua2,0],beam_num_edited_full_vis2[:,ua2,1], beam_num_edited_full_vis2[:,ua2,2], True)
+        plt.title("Modal Comparison of Beam Exp Frequency: " + str(exp_data_beam['exp_freq'][0,good_exp_beam_data[ua2]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_beam_total[ua2]])+ "NAS = red, Exp. = blue")
 
 
 # exp phi beam
 beam_exp_full = np.delete(beam_exp_full, deleted_exp_beam_total, axis = 1 ) #deletes the extra experimental modes
 beam_exp_full = orderPhi(beam_exp_full, good_exp_beam_data)
+
+
 #numerical phi beam
-beam_num_edited_full  = orderPhi(beam_num_edited_full, freq_allowed_beam_total)
-beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full, full_mac_beam_display)
+beam_num_edited_full_e = calcDisp(beam_num_edited_full,full_length/2.0 ) #method to use extrapolated points with rotation
+beam_num_edited_full_e  = orderPhi(beam_num_edited_full_e, freq_allowed_beam_total)
+beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full_e, full_mac_beam_display)
 
 # ====================Appendix ===========================================
 
