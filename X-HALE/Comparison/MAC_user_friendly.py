@@ -196,11 +196,10 @@ exp_mode_beam = exp_mode_beam.transpose((2,0,1))
 
 num_mode_beam = num_data_beam['num_mode_shapes'].copy()
 num_beam_coord_def = num_data_beam['num_coordinates_in_with_def'].copy()
-num_mode_beam1 = num_data_beam['sum_modal_def'].copy()
 num_beam_coord = num_data_beam['num_coordinates'].copy()  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Cancel the mode transpose
  
 num_mode_beam = num_mode_beam.transpose((2,0,1))
-num_mode_beam1 = num_mode_beam1.transpose((2,0,1))
+# num_mode_beam1 = num_mode_beam1.transpose((2,0,1))
 
 # =====================================================================================================================\
 
@@ -529,16 +528,16 @@ for juliet in range(len(exp_mode_beam)):
         exp_mode_beam_vis[juliet,kilo,2] = exp_mode_beam[juliet,kilo,2] + exp_beam_coord[2,juliet]
 
 
-num_mode_beam_vis_e = num_mode_beam1.copy()
+num_mode_beam_vis = num_mode_beam.copy()
 for hector2_v in range(len(num_mode_beam[0])):
     for hector_v in range(len(num_mode_beam)):
-        num_mode_beam_vis_e[hector_v,hector2_v,0] = num_mode_beam1[hector_v,hector2_v,0] + (-num_beam_coord_def[0,hector_v] + num_beam_coord[0,hector_v]) #have to eliminate static def that was added to mode data during import
-        num_mode_beam_vis_e[hector_v,hector2_v,1] = num_mode_beam1[hector_v,hector2_v,1] + (-num_beam_coord_def[1,hector_v] + num_beam_coord[1,hector_v])
-        num_mode_beam_vis_e[hector_v,hector2_v,2] = num_mode_beam1[hector_v,hector2_v,2] + (-num_beam_coord_def[2,hector_v] + num_beam_coord[2,hector_v])
-store_copy = np.zeros(np.shape(num_mode_beam))
-store_copy[:,:,3:6] = num_mode_beam[:,:,3:6].copy()
-store_copy[:,:,0:3] = num_mode_beam_vis_e[:,:,:]
-num_mode_beam_vis = store_copy
+        num_mode_beam_vis[hector_v,hector2_v,0] = num_mode_beam[hector_v,hector2_v,0] + num_beam_coord[0,hector_v] 
+        num_mode_beam_vis[hector_v,hector2_v,1] = num_mode_beam[hector_v,hector2_v,1] + num_beam_coord[1,hector_v]
+        num_mode_beam_vis[hector_v,hector2_v,2] = num_mode_beam[hector_v,hector2_v,2] + num_beam_coord[2,hector_v]
+# store_copy = np.zeros(np.shape(num_mode_beam))
+# store_copy[:,:,3:6] = num_mode_beam[:,:,3:6].copy()
+# store_copy[:,:,0:3] = num_mode_beam_vis_e[:,:,:]
+# num_mode_beam_vis = store_copy
 
 
 # #Averaging experimental data: 
@@ -549,7 +548,6 @@ num_mode_beam_vis = store_copy
 #     beam_exp_full_vis[:,kami_v,1] = temp_av_y_v
 #     beam_exp_full_vis[:,kami_v,2] = temp_av_z_v
     
-beam_exp_full_vis = exp_mode_beam_vis.copy()
 # =============================================================================================================
 
 
@@ -589,15 +587,6 @@ mode_shapes_reduced_total_vis= normalizeNumData(mode_shapes_reduced_total_vis)
 
 #--------       ------------- Beam section Additional Processing: Add Mode to beam coord data-------------   ----------------
 
-#--------------Numerical data --------------
-
-#We are trying to remove the static deformation from the total beam data since it was exported with static deformation
-# Use static def to remove the static def from the total modes
-for hector in range(len(num_mode_beam)):
-    for hector2 in range(len(num_mode_beam[0])):
-        num_mode_beam[hector,hector2,0] = num_mode_beam[hector,hector2,0] - num_beam_coord_def[0,hector]
-        num_mode_beam[hector,hector2,1] = num_mode_beam[hector,hector2,1] - num_beam_coord_def[1,hector]
-        num_mode_beam[hector,hector2,2] = num_mode_beam[hector,hector2,2] - num_beam_coord_def[2,hector]
 
 # -----------Normalize beam numerical data-------------------
 
@@ -620,7 +609,6 @@ num_mode_beam_vis = normalizeNumData(num_mode_beam_vis)
 #===============================================end section=====================================================#
 
 
-print(1)
 
 
 # =====================Visualization Secton for global translations and Rotations of Data==========================
@@ -631,7 +619,7 @@ print(1)
 #----------------USE THIS EXTENSIVELY WITH EACH NEW DATA SET method to match Beam frequencies of num (coord+mode) and exp (coord+mode) data by hand --------------------------
 
 if help_sort == True:     
-    exp_markers = [exp_modes_norm_vis,exp_modes_norm_vis,exp_modes_norm_vis, beam_exp_full_vis] #wish i can pass it by reference instead of making a huge matrix of data
+    exp_markers = [exp_modes_norm_vis,exp_modes_norm_vis,exp_modes_norm_vis, exp_mode_beam_vis] #wish i can pass it by reference instead of making a huge matrix of data
     num_markers = [mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,mode_shapes_reduced_total_vis,num_mode_beam_vis] 
    
     
@@ -708,7 +696,7 @@ def remove_Grid_Freq (total_grids, mode_shapes_reduced_dummy, freq_we_want, grid
 #     temp_av_x, temp_av_y, temp_av_z = beamAverage(exp_mode_beam[:,kami,0],exp_mode_beam[:,kami,1],exp_mode_beam[:,kami,2], 0)
 #     beam_exp_full[:,kami,0] = temp_av_x 
 #     beam_exp_full[:,kami,1] = temp_av_y 
-#     beam_exp_full[:,kami,2] = temp_av_z 
+#     beam_exp_full[:,kami,2] = temp_av_z  #if you want to average the data instead uncomment this (you would still need to alter the numerical data though)
 beam_exp_full = exp_mode_beam.copy()
 
 
@@ -966,11 +954,11 @@ if individual_mac_display == True:
 #------------------Full Mac for beam-------------------------#
 
 if full_mac_beam_display == True: #displays mode data if user wants it to appear, also shows mac 3d bar chart
-    beam_exp_full_vis = np.delete(beam_exp_full_vis, deleted_exp_beam_total, axis = 1)
+    exp_mode_beam_vis = np.delete(exp_mode_beam_vis, deleted_exp_beam_total, axis = 1)
 
-    for ua2 in range(len(beam_exp_full_vis[0])):
+    for ua2 in range(len(exp_mode_beam_vis[0])):
         beam_num_edited_full_vis2 = calcDisp(beam_num_edited_full_vis,full_length/2.0 )
-        plotGraphs(beam_exp_full_vis[:,ua2,0],beam_exp_full_vis[:,ua2,1],beam_exp_full_vis[:,ua2,2], beam_num_edited_full_vis2[:,ua2,0],beam_num_edited_full_vis2[:,ua2,1], beam_num_edited_full_vis2[:,ua2,2], True)
+        plotGraphs(exp_mode_beam_vis[:,ua2,0],exp_mode_beam_vis[:,ua2,1],exp_mode_beam_vis[:,ua2,2], beam_num_edited_full_vis2[:,ua2,0],beam_num_edited_full_vis2[:,ua2,1], beam_num_edited_full_vis2[:,ua2,2], True)
         plt.title("Modal Comparison of Beam Exp Frequency: " + str(exp_data_beam['exp_freq'][0,good_exp_beam_data[ua2]]) + ", and Numerical Frequency: " + str(num_data['freq_NASTRAN_out'][0,freq_allowed_beam_total[ua2]])+ "NAS = red, Exp. = blue")
 
 
@@ -1015,7 +1003,6 @@ beam_MAC = calculateMAC(beam_exp_full, beam_num_edited_full_e, full_mac_beam_dis
 #             num_coordinates_in_with_def: simulation coordinates + static deformation [dim x grid numbers] 
 #             num_freq: stores simulated num frequencies from nastran modes [1 x frequencies]
 #             num_mode_shapes: (from nastran) stores mode shape in first array [freq x accel (trans + rot) x grids] (Note: data not normalized)
-#             sum_modal_def: sum of modal shape + static deformation + simulated coordinates
         
 #         Experimental Data: 
 #             exp_coordinates: exp coordinates + static deformation [dim x grid numbers] 

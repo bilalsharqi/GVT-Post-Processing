@@ -457,30 +457,32 @@ for a in range(len(copy1)):
 #================================================================================
 # Save data
 #================================================================================
-# print("...Exporting results in a .mat file")
-# dir=os.path.dirname(os.path.abspath("read_plot_beam_nastran.py"))
-# path = os.path.join(dir, "beam_num_data_in.mat")
-# database = {}
-# #
-# ## Write problem data
-# #database["number_of_modes"] = n_fields
-# database["grids"] = grids
-# database["num_coordinates"] = grid_coord_NASTRAN
-# database["num_mode_shapes"] = mode_shapes_NASTRAN[47] + static_deform[47]
-# # database["num_coordinates_in_with_def"] = num_coordinates_in_updates
-# # database["sum_modal_def"] = total_num_disp
-# #
-# ## Write mode shapes
-# #
-# # Write frequencies 
-# database["num_freq"] = freq_NASTRAN[47]
-# # Write loads
-# #database["Loads"] = Loads
+print("...Exporting results in a .mat file")
+dir=os.path.dirname(os.path.abspath("read_plot_beam_nastran.py"))
+path = os.path.join(dir, "beam_num_data_in.mat")
+database = {}
+#
+## Write problem data
+#database["number_of_modes"] = n_fields
+database["grids"] = grids
+database["num_coordinates"] = grid_coord_NASTRAN
+database["num_mode_shapes"] = mode_shapes_NASTRAN[47]
+database["static_deformation"] = static_deform[47]
 
-# # Writing database
-# if os.path.isfile(path):
-#     os.remove(path)
-# sio.savemat(path,database,appendmat=False)
+database["num_coordinates_in_with_def"] = num_coordinates_in_updates
+# database["sum_modal_def"] = total_num_disp
+#
+## Write mode shapes
+#
+# Write frequencies 
+database["num_freq"] = freq_NASTRAN[47]
+# Write loads
+#database["Loads"] = Loads
+
+# Writing database
+if os.path.isfile(path):
+    os.remove(path)
+sio.savemat(path,database,appendmat=False)
 
 
 # #================================================================================
