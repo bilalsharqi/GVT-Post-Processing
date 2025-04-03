@@ -19,7 +19,7 @@ plt.close("all")
 
 #file_name = 'OOP_inb_new_attach_0_30Hz_complex_polymax.unv'
 file_name = 'OOP_inb_new_attach_0_30Hz_no euler.unv'
-#file_name = 'Bradens_example_modes_alt.unv'
+# file_name = 'Bradens_example_modes_alt.unv'
 uff_file = pyuff.UFF(file_name)
 
 types_of_sets = uff_file.get_set_types()
@@ -29,7 +29,7 @@ data = uff_file.read_sets()
 # locations of accelerometers (or nodes)
 coordinates = []
 for sub in data: 
-    if sub['type'] == 15: 
+    if sub['type'] == 2411: 
 
         coordinates = [sub['x'],sub['y'],sub['z']]
         break
@@ -37,7 +37,7 @@ for sub in data:
 # pick up node number ordering (accelerometer order)
 node_number = []
 for sub in data:
-    if sub['type'] == 15:
+    if sub['type'] == 2411:
         node_number = sub['node_nums']
         
 # test accel locations by plotting
@@ -115,19 +115,23 @@ mode_shapes = np.asarray(mode_shapes, dtype=np.complex64)
 # of sensors defined in geometry; a la some of the sensors were turned off
 # during the test  
 # delete any node locations that do not correspond to sensor data
-int_2_remove = []
-node_number.astype(int)
-node_number_eigenvector.astype(int)
-for node in range(len(node_number)):
-#    print(node)
-#    print(node_number[node])
-    if node_number[node] not in node_number_eigenvector:
-#        print('delete is happening')
-#        np.delete(node_number, node)
-        int_2_remove.append(node)
-node_number = np.delete(node_number, int_2_remove)  
-for i in range(len(coordinates)):
-    coordinates[i] = np.delete(coordinates[i], int_2_remove)     
+# int_2_remove = []
+# node_number.astype(int)
+# node_number_eigenvector.astype(int)
+# for node in range(len(node_number)):
+# #    print(node)
+# #    print(node_number[node])
+#     if node_number[node] not in node_number_eigenvector:
+# #        print('delete is happening')
+# #        np.delete(node_number, node)
+#         int_2_remove.append(node)
+# node_number = np.delete(node_number, int_2_remove)  
+# for i in range(len(coordinates)):
+#     coordinates[i] = np.delete(coordinates[i], int_2_remove)   
+# Remove nodes that are not in the eigenvector node list
+int_2_remove = [i for i, node in enumerate(node_number) if node not in node_number_eigenvector]
+node_number = np.delete(node_number, int_2_remove)
+coordinates = [np.delete(coord, int_2_remove) for coord in coordinates]  
 # have not modified anything after this
     
 # function to sort node displacements in eigenvector to the same order as 
@@ -140,7 +144,7 @@ def sort_mode_shapes(u_unsorted, grids, grids_order):
     # ids from the total imported displacement field 
 
     # allocation
-    u_sorted = np.csingle([np.zeros([3,len(grids_order)],dtype=np.complex) \
+    u_sorted = np.csingle([np.zeros([3,len(grids_order)],dtype=complex) \
                            for i in range(len(u_unsorted))]) 
 
     # loop over the number of fields (e.g. mode shapes)
